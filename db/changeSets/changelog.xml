@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="create_tables" author="wilson">
+        <createTable tableName="tbl_photo">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="path" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="tbl_person">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="tbl_face">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="photo_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_face_photo" references="tbl_photo(id)"/>
+            </column>
+            <column name="location" type="jsonb"/>
+            <column name="embedding" type="jsonb"/>
+            <column name="person_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_face_person" references="tbl_person(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
