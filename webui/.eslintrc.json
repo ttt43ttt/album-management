@@ -1,0 +1,69 @@
+{
+  "parser": "babel-eslint",
+  "extends": [
+    "airbnb",
+    "prettier",
+    "prettier/react",
+    "plugin:prettier/recommended",
+    "plugin:compat/recommended"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "mocha": true,
+    "jest": true,
+    "jasmine": true
+  },
+  "globals": {
+    "APP_TYPE": true,
+    "page": true
+  },
+  "rules": {
+    "prettier/prettier": 1,
+    "react/destructuring-assignment": 0,
+    "react/jsx-filename-extension": [1, { "extensions": [".js"] }],
+    "react/jsx-wrap-multilines": 0,
+    "react/no-unused-state": 1,
+    "react/prefer-stateless-function": 0,
+    "react/prop-types": 0,
+    "react/forbid-prop-types": 0,
+    "react/jsx-one-expression-per-line": 0,
+    "react/jsx-props-no-spreading": 0,
+    "react/require-default-props": 0,
+    "react/state-in-constructor": 0,
+    "react/static-property-placement": 0,
+    "import/no-extraneous-dependencies": [
+      2,
+      {
+        "optionalDependencies": true,
+        "devDependencies": true
+      }
+    ],
+    "import/order": 1,
+    "import/prefer-default-export": 0,
+    "jsx-a11y/no-noninteractive-element-interactions": 0,
+    "jsx-a11y/click-events-have-key-events": 0,
+    "jsx-a11y/no-static-element-interactions": 0,
+    "jsx-a11y/anchor-is-valid": 0,
+    "arrow-body-style": 0,
+    "func-names": 0,
+    "linebreak-style": 0,
+    "no-else-return": 0,
+    "no-param-reassign": [1, { "props": false }],
+    "no-restricted-syntax": 0,
+    "no-underscore-dangle": 0,
+    "no-unused-vars": 1,
+    "no-use-before-define": [1, { "functions": false, "classes": false }],
+    "prefer-destructuring": 0,
+    "prefer-template": 0,
+    "prefer-rest-params": 0,
+    "camelcase": 0
+  },
+  "settings": {
+    "polyfills": ["fetch", "promises", "url"],
+    "import/resolver": {
+      "babel-module": {}
+    }
+  }
+}
