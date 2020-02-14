@@ -41,12 +41,15 @@ for (i, imagePath) in enumerate(imagePaths):
 		model=args["detection_method"])
 
 	# compute the facial embedding for the face
-	encodings = face_recognition.face_encodings(rgb, boxes)
+	encodings = face_recognition.face_encodings(rgb, known_face_locations=boxes, num_jitters=1)
 
 	# build a dictionary of the image path, bounding box location,
 	# and facial encodings for the current image
 	d = [{"imagePath": imagePath, "loc": box, "encoding": enc}
 		for (box, enc) in zip(boxes, encodings)]
+	# print(d)
+	# {'imagePath': 'dataset\\IMG_20180721_125340.jpg', 'loc': (724, 1469, 1682, 510), 'encoding': array([ -7.29319155e-02,   1.23653002e-01,...,1.02055758e-01,  -5.22855017e-03])}
+	# encoding is a 128-dimensional array
 	data.extend(d)
 
 # dump the facial encodings data to disk
