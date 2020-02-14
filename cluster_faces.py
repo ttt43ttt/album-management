@@ -67,4 +67,5 @@ for labelID in labelIDs:
 	title = "Face ID #{}".format(labelID)
 	title = "Unknown Faces" if labelID == -1 else title
 	cv2.imshow(title, montage)
-	cv2.waitKey(0)
+
+cv2.waitKey(0)
