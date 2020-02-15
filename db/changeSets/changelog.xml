@@ -17,6 +17,11 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <addUniqueConstraint
+            columnNames="path"
+            constraintName="tbl_photo_path_unique_constraint"
+            tableName="tbl_photo"
+        />
 
         <createTable tableName="tbl_person">
             <column name="id" type="bigint" autoIncrement="true">
