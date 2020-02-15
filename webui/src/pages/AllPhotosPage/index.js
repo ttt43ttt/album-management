@@ -24,7 +24,7 @@ class Page extends React.Component {
   onPageChange = (pageNumber, pageSize) => {
     const { query } = this.props;
     this.props.dispatch({
-      type: 'photo/listPhoto',
+      type: 'photo/listPhotos',
       payload: { ...query, pageNumber, pageSize },
     });
   };
@@ -35,29 +35,31 @@ class Page extends React.Component {
 
     return (
       <div className={styles.content}>
-        <div className={styles.searchResult}>
-          <Spin spinning={isLoading}>
-            {photos.map(photo => (
-              <div>test</div>
-            ))}
-            {meta.total === 0 && <div>No result</div>}
-            {meta.total > 0 && (
-              <div className={styles.pager}>
-                <Pagination
-                  size="small"
-                  showSizeChanger
-                  showQuickJumper
-                  current={pageNumber}
-                  pageSize={pageSize}
-                  total={meta.total}
-                  onChange={this.onPageChange}
-                  onShowSizeChange={this.onPageChange}
-                  showTotal={(total, range) => `${range[0]}-${range[1]} of ${total}`}
-                />
+        <Spin spinning={isLoading}>
+          <div className={styles.photoGallery}>
+            {photos.map(({ id, url }) => (
+              <div key={id} className={styles.photoContainer}>
+                <img alt={url} src={url} className={styles.photo} />
               </div>
-            )}
-          </Spin>
-        </div>
+            ))}
+          </div>
+          {meta.total === 0 && <div>没有发现照片</div>}
+          {meta.total > 0 && (
+            <div className={styles.pager}>
+              <Pagination
+                size="small"
+                showSizeChanger
+                showQuickJumper
+                current={pageNumber}
+                pageSize={pageSize}
+                total={meta.total}
+                onChange={this.onPageChange}
+                onShowSizeChange={this.onPageChange}
+                showTotal={(total, range) => `${range[0]}-${range[1]} of ${total}`}
+              />
+            </div>
+          )}
+        </Spin>
       </div>
     );
   }

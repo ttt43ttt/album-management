@@ -31,13 +31,16 @@ def listPhotos():
     pageSize = query["pageSize"]
     skipCount = pageSize*(pageNumber-1)
     total = count_photos()
-    photos = list_photos(pageSize, skipCount)
     meta = {"total": total, "limit": pageSize, "skip": skipCount}
+    photos = list_photos(pageSize, skipCount)
+    for photo in photos:
+        id = photo["id"]
+        photo["url"] = f"/api/photos/{id}/content"
     return {"data": photos, "meta": meta}
 
 
-@app.route('/api/photos/<id>', methods=['GET'])
-def showPhoto(id):
+@app.route('/api/photos/<id>/content', methods=['GET'])
+def showPhotoContent(id):
     imgPath = get_photo_path(id)
     if imgPath is None:
         return make_response("", 404)
