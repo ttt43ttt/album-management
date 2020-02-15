@@ -22,7 +22,10 @@ function checkStatus(response) {
  * @return {object}           An object containing either "data" or "err"
  */
 export default function request(url, options) {
-  const newOptions = { ...options };
+  const newOptions = {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  };
   if (options && options.body) {
     newOptions.body = JSON.stringify(options.body);
   }
