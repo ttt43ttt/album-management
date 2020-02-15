@@ -39,11 +39,19 @@
             <column name="photo_id" type="bigint">
                 <constraints nullable="false" foreignKeyName="fk_face_photo" references="tbl_photo(id)"/>
             </column>
-            <column name="location" type="jsonb"/>
-            <column name="embedding" type="jsonb"/>
+<!--            <column name="face_index" type="int">-->
+<!--                <constraints nullable="false"/>-->
+<!--            </column>-->
+            <column name="location" type="json"/>
+            <column name="embedding" type="json"/>
             <column name="person_id" type="bigint">
-                <constraints nullable="false" foreignKeyName="fk_face_person" references="tbl_person(id)"/>
+                <constraints foreignKeyName="fk_face_person" references="tbl_person(id)"/>
             </column>
         </createTable>
+<!--        <addUniqueConstraint-->
+<!--            columnNames="photo_id, face_index"-->
+<!--            constraintName="tbl_face_photo_face_index_unique_constraint"-->
+<!--            tableName="tbl_photo"-->
+<!--        />-->
     </changeSet>
 </databaseChangeLog>

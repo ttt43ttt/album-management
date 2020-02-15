@@ -1,39 +1,45 @@
 import psycopg2
+from psycopg2 import pool
+import logging
 
-connection = None
+postgreSQL_pool = None
 
-def new_db_connection():
-    try:
-        connection = psycopg2.connect(
-            user="postgres",
-            password="postgres",
-            host="127.0.0.1",
-            port="5432",
-            database="photo_album",
-        )
+def init_conn_pool():
+  logger = logging.getLogger("logger")
+  global postgreSQL_pool
+  try:
+      postgreSQL_pool = pool.SimpleConnectionPool(
+        1, 20,
+        user="postgres",
+        password="postgres",
+        host="127.0.0.1",
+        port="5432",
+        database="photo_album"
+      )
 
-        cursor = connection.cursor()
-        # Print PostgreSQL Connection properties
-        print(connection.get_dsn_parameters(), "\n")
+      if (postgreSQL_pool):
+        logger.info("Connection pool created successfully")
+      else:
+        logger.error("Failed to create connection pool")
 
-        # Print PostgreSQL version
-        cursor.execute("SELECT version();")
-        record = cursor.fetchone()
-        print("You are connected to - ", record, "\n")
-        return connection
+  except (Exception, psycopg2.DatabaseError) as error :
+      logger.error("Error while connecting to PostgreSQL", error)
 
-    except (Exception, psycopg2.Error) as error:
-        print("Error while connecting to PostgreSQL", error)
-    # finally:
-    #     # closing database connection.
-    #     if connection:
-    #         cursor.close()
-    #         connection.close()
-    #         print("PostgreSQL connection is closed")
+  finally:
+      #closing database connection.
+      # use closeall method to close all the active connection if you want to turn of the application
+      # if (postgreSQL_pool):
+      #     postgreSQL_pool.closeall
+      # print("PostgreSQL connection pool is closed")
+      pass
 
 
-def get_db_connection():
-    global connection
-    if connection is None:
-        connection = new_db_connection()
-    return connection
+init_conn_pool()
+
+
+def get_connection():
+    return postgreSQL_pool.getconn()
+
+
+def put_connection(conn):
+  postgreSQL_pool.putconn(conn)

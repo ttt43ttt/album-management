@@ -6,6 +6,7 @@ import logging
 
 from logger import create_logger
 from photos import reload_photos, list_photos, get_photo_path, count_photos
+from faces import reload_faces
 
 app = Flask(__name__)
 
@@ -23,6 +24,14 @@ def reloadPhotos():
     "Reload photos from disk"
     reload_photos()
     return {"data": "OK"}
+
+
+@app.route('/api/faces/reload', methods=['POST'])
+def reloadFaces():
+    "Reload faces from photos"
+    reload_faces()
+    return {"data": "OK"}
+
 
 @app.route('/api/photos/list', methods=['POST'])
 def listPhotos():
