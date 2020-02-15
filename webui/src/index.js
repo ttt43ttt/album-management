@@ -1,6 +1,9 @@
 import dva from 'dva';
-
+import { message } from 'antd';
 import createLoading from 'dva-loading';
+import { createHashHistory } from 'history';
+
+import { _setHistory } from '@/utils/router';
 
 import '../theme/index.less';
 import './index.less';
@@ -8,8 +11,16 @@ import './index.less';
 import router from './router';
 import models from './models';
 
+const history = createHashHistory();
+_setHistory(history);
+
 // 1. Initialize
-const app = dva();
+const app = dva({
+  history,
+  onError(e) {
+    message.error(e.message, /* duration */ 3);
+  },
+});
 window.g_app = app;
 
 // 2. Plugins

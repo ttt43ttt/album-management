@@ -1,6 +1,8 @@
 import React from 'react';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
+import Navigator from './Navigator';
+import styles from './style.less';
 
 class BaseLayout extends React.Component {
   render() {
@@ -8,7 +10,10 @@ class BaseLayout extends React.Component {
     return (
       <ConfigProvider locale={zhCN}>
         <div className="header" />
-        {children}
+        <div className={styles.body}>
+          <Navigator />
+          <div className={styles.main}>{children}</div>
+        </div>
         <div className="footer" />
       </ConfigProvider>
     );
