@@ -18,7 +18,7 @@ def cluster_faces(data, n_jobs=-1):
 	# cluster the embeddings
 	print("[INFO] clustering...")
 	# the eps value needs to be chosen carefully
-	clt = DBSCAN(metric="euclidean", eps=0.4, min_samples=2, n_jobs=n_jobs)
+	clt = DBSCAN(metric="euclidean", eps=0.4, min_samples=5, n_jobs=n_jobs)
 	clt.fit(encodings)
 
 	# determine the total number of unique faces found in the dataset
