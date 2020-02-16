@@ -1,8 +1,8 @@
 import { message } from 'antd';
-import { searchPulls } from '@/services/githubPullsSearch';
+import { listPersons } from '@/services/person';
 
 export default {
-  namespace: 'githubPullsSearch',
+  namespace: 'person',
 
   state: {
     query: {},
@@ -11,23 +11,23 @@ export default {
   },
 
   effects: {
-    *search({ payload }, { call, put }) {
+    *listPersons({ payload }, { call, put }) {
       try {
-        const response = yield call(searchPulls, payload);
+        const response = yield call(listPersons, payload);
         yield put({
-          type: 'setPulls',
+          type: 'setPersons',
           query: payload,
           list: response.data,
           meta: response.meta,
         });
       } catch (error) {
-        message.error('Failed to search github pull requests');
+        message.error('获取人物列表失败');
       }
     },
   },
 
   reducers: {
-    setPulls(state, { query, list, meta }) {
+    setPersons(state, { query, list, meta }) {
       return { ...state, query, list, meta };
     },
   },

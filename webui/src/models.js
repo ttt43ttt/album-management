@@ -1,3 +1,4 @@
 import photo from '@/models/photo';
+import person from '@/models/person';
 
-export default [photo];
+export default [photo, person];

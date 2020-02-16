@@ -23,7 +23,7 @@ class Navigator extends React.Component {
     return (
       <Menu
         mode="inline"
-        defaultSelectedKeys={['all-photos']}
+        defaultSelectedKeys={[window.location.hash.substring(2)]}
         className={styles.navigator}
         onSelect={this.onSelect}
       >

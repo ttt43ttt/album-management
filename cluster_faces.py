@@ -21,6 +21,9 @@ def cluster_faces(data, n_jobs=-1):
 	clt = DBSCAN(metric="euclidean", eps=0.4, min_samples=5, n_jobs=n_jobs)
 	clt.fit(encodings)
 
+	# clt.labels_ looks like [3, -1, 0, -1, 2, 1, 1, 3]
+	# 对应每一行的label
+	
 	# determine the total number of unique faces found in the dataset
 	labelIDs = np.unique(clt.labels_)
 	numUniqueFaces = len(np.where(labelIDs > -1)[0])
