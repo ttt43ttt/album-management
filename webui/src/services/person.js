@@ -13,3 +13,10 @@ export async function listPhotos(personId, payload) {
     body: payload,
   });
 }
+
+export async function renamePerson(personId, name) {
+  return request(`/api/persons/${personId}/rename`, {
+    method: 'POST',
+    body: { name },
+  });
+}

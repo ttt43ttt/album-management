@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { listPersons } from '@/services/person';
+import { listPersons, renamePerson } from '@/services/person';
 
 export default {
   namespace: 'person',
@@ -22,6 +22,18 @@ export default {
         });
       } catch (error) {
         message.error('获取人物列表失败');
+      }
+    },
+    *reload(_, { put, select }) {
+      const { query } = yield select(state => state.person);
+      yield put({ type: 'listPersons', payload: query });
+    },
+    *renamePerson({ personId, name }, { call, put }) {
+      try {
+        yield call(renamePerson, personId, name);
+        yield put({ type: 'reload' });
+      } catch (error) {
+        message.error('修改人物名称失败');
       }
     },
   },

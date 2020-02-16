@@ -7,7 +7,8 @@ import logging
 from logger import create_logger
 from photos import reload_photos, list_photos, get_photo_path, count_photos
 from faces import reload_faces
-from persons import list_persons, get_person_image, list_person_photos, count_person_photos
+from persons import list_persons, get_person_image, list_person_photos, count_person_photos,\
+rename_person
 
 app = Flask(__name__)
 
@@ -65,6 +66,13 @@ def listPersons():
         id = person["id"]
         person["url"] = f"/api/persons/{id}/image"
     return {"data": persons}
+
+@app.route('/api/persons/<id>/rename', methods=['POST'])
+def renamePerson(id):
+    query = request.json
+    name = query["name"]
+    rename_person(id, name)
+    return {"data": "OK"}
 
 
 @app.route('/api/persons/<id>/image', methods=['GET'])

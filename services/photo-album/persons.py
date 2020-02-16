@@ -90,3 +90,13 @@ def count_person_photos(personId):
       return row[0]
   finally:
     db.put_connection(conn)
+
+
+def rename_person(personId, name):
+  conn = db.get_connection()
+  try:
+    with conn.cursor() as cursor:
+      cursor.execute("update tbl_person set name=%s where id=%s", (name, personId))
+    conn.commit()
+  finally:
+    db.put_connection(conn)
