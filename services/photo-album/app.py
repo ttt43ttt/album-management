@@ -7,6 +7,7 @@ import logging
 from logger import create_logger
 from photos import reload_photos, list_photos, get_photo_path, count_photos
 from faces import reload_faces
+from persons import list_persons, get_person_image
 
 app = Flask(__name__)
 
@@ -54,6 +55,24 @@ def showPhotoContent(id):
     if imgPath is None:
         return make_response("", 404)
     return send_file(imgPath)
+
+
+@app.route('/api/persons/list', methods=['POST'])
+def listPersons():
+    persons = list_persons()
+    for person in persons:
+        id = person["id"]
+        person["url"] = f"/api/persons/{id}/image"
+    return {"data": persons}
+
+
+@app.route('/api/persons/<id>/image', methods=['GET'])
+def showPersonImage(id):
+    imgPath = get_person_image(id)
+    if imgPath is None:
+        return make_response("", 404)
+    return send_file(imgPath)
+
 
 if __name__ == '__main__':
     logger.info("service starts...")

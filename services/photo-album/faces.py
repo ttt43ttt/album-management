@@ -1,5 +1,4 @@
 import cv2
-import logging
 import face_recognition
 from sklearn.cluster import DBSCAN
 from psycopg2.extras import Json
@@ -7,6 +6,7 @@ import numpy as np
 
 import db
 import settings
+from logger import get_logger
 
 def reload_faces():
   conn = db.get_connection()
@@ -58,9 +58,9 @@ def encode_face(photoId, photoPath, cursor):
 def cluster_face(cursor):
   "人脸聚类"
   # 只取未知人脸
-  cursor.execute("select id, location, embedding from tbl_face where person_id is NULL")
+  cursor.execute("select id, embedding from tbl_face where person_id is NULL")
   rows = cursor.fetchall()
-  faces = [{"id": row[0], "location": row[1], "encoding": row[2]} for row in rows]
+  faces = [{"id": row[0], "encoding": row[1]} for row in rows]
   encodings = [face["encoding"] for face in faces]
   
   # the eps value needs to be chosen carefully

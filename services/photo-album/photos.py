@@ -1,14 +1,14 @@
 import os
-import logging
 from imutils import paths
 
 import db
 import settings
+from logger import get_logger
 
 
 def reload_photos():
   imagePaths = paths.list_images(settings.USER_PHOTO_HOME)
-  logger = logging.getLogger("logger")
+  logger = get_logger()
   conn = db.get_connection()
 
   sql = (
@@ -22,7 +22,7 @@ def reload_photos():
   try:
     with conn.cursor() as cursor:
       for imagePath in imagePaths:
-        logger.info(imagePath)
+        # logger.info(imagePath)
         cursor.execute(sql, {"path": imagePath})
       conn.commit()
   finally:
@@ -43,7 +43,7 @@ def count_photos():
 def list_photos(limit = 20, offset = 0):
   conn = db.get_connection()
   try:
-    sql = f"SELECT (id) from tbl_photo LIMIT {limit} OFFSET {offset}"
+    sql = f"SELECT id from tbl_photo LIMIT {limit} OFFSET {offset}"
     with conn.cursor() as cursor:
       cursor.execute(sql)
       rows = cursor.fetchall() 
@@ -55,7 +55,7 @@ def list_photos(limit = 20, offset = 0):
 def get_photo_path(id):
   conn = db.get_connection()
   try:
-    sql = "SELECT (path) from tbl_photo where id=%(id)s"
+    sql = "SELECT path from tbl_photo where id=%(id)s"
     with conn.cursor() as cursor:
       cursor.execute(sql, {"id": id})
       row = cursor.fetchone()
@@ -65,4 +65,3 @@ def get_photo_path(id):
         return row[0]
   finally:
     db.put_connection(conn)
-    

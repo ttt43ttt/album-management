@@ -16,3 +16,7 @@ def create_logger(logfilename):
     console.setLevel(logging.DEBUG)
     console.setFormatter(formatter)
     logger.addHandler(console)
+
+def get_logger():
+  return logging.getLogger("logger")
+  
