@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { listPersons, renamePerson } from '@/services/person';
+import { listPersons, renamePerson, mergePersons, removePersons } from '@/services/person';
 
 export default {
   namespace: 'person',
@@ -34,6 +34,22 @@ export default {
         yield put({ type: 'reload' });
       } catch (error) {
         message.error('修改人物名称失败');
+      }
+    },
+    *mergePersons({ ids }, { call, put }) {
+      try {
+        yield call(mergePersons, ids);
+        yield put({ type: 'reload' });
+      } catch (error) {
+        message.error('合并人物失败');
+      }
+    },
+    *removePersons({ ids }, { call, put }) {
+      try {
+        yield call(removePersons, ids);
+        yield put({ type: 'reload' });
+      } catch (error) {
+        message.error('移出人物失败');
       }
     },
   },

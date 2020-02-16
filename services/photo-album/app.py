@@ -8,7 +8,7 @@ from logger import create_logger
 from photos import reload_photos, list_photos, get_photo_path, count_photos
 from faces import reload_faces
 from persons import list_persons, get_person_image, list_person_photos, count_person_photos,\
-rename_person
+rename_person, merge_persons, remove_persons
 
 app = Flask(__name__)
 
@@ -74,6 +74,19 @@ def renamePerson(id):
     rename_person(id, name)
     return {"data": "OK"}
 
+@app.route('/api/persons/merge', methods=['POST'])
+def mergePersons():
+    query = request.json
+    ids = query["ids"]
+    merge_persons(ids)
+    return {"data": "OK"}
+
+@app.route('/api/persons/remove', methods=['POST'])
+def removePersons():
+    query = request.json
+    ids = query["ids"]
+    remove_persons(ids)
+    return {"data": "OK"}
 
 @app.route('/api/persons/<id>/image', methods=['GET'])
 def showPersonImage(id):

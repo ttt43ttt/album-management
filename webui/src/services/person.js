@@ -20,3 +20,17 @@ export async function renamePerson(personId, name) {
     body: { name },
   });
 }
+
+export async function mergePersons(ids) {
+  return request(`/api/persons/merge`, {
+    method: 'POST',
+    body: { ids },
+  });
+}
+
+export async function removePersons(ids) {
+  return request(`/api/persons/remove`, {
+    method: 'POST',
+    body: { ids },
+  });
+}

@@ -100,3 +100,28 @@ def rename_person(personId, name):
     conn.commit()
   finally:
     db.put_connection(conn)
+
+
+def merge_persons(ids):
+  conn = db.get_connection()
+  try:
+    with conn.cursor() as cursor:
+      newId = ids[0]
+      idsToRemove = tuple(ids[1:])
+      cursor.execute("update tbl_face set person_id=%s where person_id in %s", (newId, idsToRemove))
+      cursor.execute("delete from tbl_person where id in %s", (idsToRemove,))
+    conn.commit()
+  finally:
+    db.put_connection(conn)
+
+
+def remove_persons(ids):
+  conn = db.get_connection()
+  try:
+    with conn.cursor() as cursor:
+      idsToRemove = tuple(ids)
+      cursor.execute("update tbl_face set person_id=NULL where person_id in %s", (idsToRemove,))
+      cursor.execute("delete from tbl_person where id in %s", (idsToRemove,))
+    conn.commit()
+  finally:
+    db.put_connection(conn)
