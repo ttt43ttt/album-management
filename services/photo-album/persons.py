@@ -55,7 +55,7 @@ def get_person_image(personId):
     db.put_connection(conn)
 
 
-def list_person_photos(personId):
+def list_person_photos(personId, limit=20, offset=0):
   "返回包含某个人物的照片列表"
   conn = db.get_connection()
   try:
@@ -64,10 +64,29 @@ def list_person_photos(personId):
       " from tbl_photo photo"
       " inner join tbl_face face on photo.id = face.photo_id"
       " where face.person_id = %s"
+      " LIMIT %s OFFSET %s"
+    )
+    with conn.cursor() as cursor:
+      cursor.execute(sql, (personId, limit, offset))
+      rows = cursor.fetchall()
+      return [{"id": row[0]} for row in rows]
+  finally:
+    db.put_connection(conn)
+
+
+def count_person_photos(personId):
+  "返回包含某个人物的照片总数"
+  conn = db.get_connection()
+  try:
+    sql = (
+      "select count(photo.id)"
+      " from tbl_photo photo"
+      " inner join tbl_face face on photo.id = face.photo_id"
+      " where face.person_id = %s"
     )
     with conn.cursor() as cursor:
       cursor.execute(sql, (personId,))
-      rows = cursor.fetchall()
-      return [{"id": row[0]} for row in rows]
+      row = cursor.fetchone()
+      return row[0]
   finally:
     db.put_connection(conn)

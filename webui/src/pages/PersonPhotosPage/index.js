@@ -1,7 +1,7 @@
 import React from 'react';
 import * as R from 'ramda';
 import { connect } from 'dva';
-import { Spin } from 'antd';
+import { Spin, Pagination } from 'antd';
 import PhotoGallery from '@/components/PhotoGallery';
 import styles from './style.less';
 
@@ -13,15 +13,47 @@ import styles from './style.less';
 }))
 class Page extends React.Component {
   componentDidMount() {
-    const personId = R.path(['match', 'params', 'id'], this.props);
-    this.props.dispatch({ type: 'personPhoto/listPhotos', personId });
+    this.props.dispatch({
+      type: 'personPhoto/listPhotos',
+      personId: this.getPersonId(),
+      payload: { pageNumber: 1, pageSize: 20 },
+    });
   }
 
+  getPersonId = () => R.path(['match', 'params', 'id'], this.props);
+
+  onPageChange = (pageNumber, pageSize) => {
+    const { query } = this.props;
+    this.props.dispatch({
+      type: 'personPhoto/listPhotos',
+      personId: this.getPersonId(),
+      payload: { ...query, pageNumber, pageSize },
+    });
+  };
+
   render() {
-    const { photos, isLoading } = this.props;
+    const { query, photos, meta, isLoading } = this.props;
+    const { pageNumber, pageSize } = query;
+
     return (
       <Spin spinning={isLoading}>
         <PhotoGallery photos={photos} />
+        {meta.total === 0 && <div>没有找到此人的照片</div>}
+        {meta.total > 0 && (
+          <div className={styles.pager}>
+            <Pagination
+              size="small"
+              showSizeChanger
+              showQuickJumper
+              current={pageNumber}
+              pageSize={pageSize}
+              total={meta.total}
+              onChange={this.onPageChange}
+              onShowSizeChange={this.onPageChange}
+              showTotal={(total, range) => `${range[0]}-${range[1]} of ${total}`}
+            />
+          </div>
+        )}
       </Spin>
     );
   }

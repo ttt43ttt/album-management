@@ -7,7 +7,7 @@ import logging
 from logger import create_logger
 from photos import reload_photos, list_photos, get_photo_path, count_photos
 from faces import reload_faces
-from persons import list_persons, get_person_image, list_person_photos
+from persons import list_persons, get_person_image, list_person_photos, count_person_photos
 
 app = Flask(__name__)
 
@@ -42,6 +42,7 @@ def listPhotos():
     skipCount = pageSize*(pageNumber-1)
     total = count_photos()
     meta = {"total": total, "limit": pageSize, "skip": skipCount}
+    
     photos = list_photos(pageSize, skipCount)
     for photo in photos:
         id = photo["id"]
@@ -76,11 +77,18 @@ def showPersonImage(id):
 
 @app.route('/api/persons/<id>/photos/list', methods=['POST'])
 def listPersonPhotos(id):
-    photos = list_person_photos(id)
+    query = request.json
+    pageNumber = query["pageNumber"]
+    pageSize = query["pageSize"]
+    skipCount = pageSize*(pageNumber-1)
+    total = count_person_photos(id)
+    meta = {"total": total, "limit": pageSize, "skip": skipCount}
+    
+    photos = list_person_photos(id, pageSize, skipCount)
     for photo in photos:
         id = photo["id"]
         photo["url"] = f"/api/photos/{id}/content"
-    return {"data": photos}
+    return {"data": photos, "meta": meta}
 
 
 if __name__ == '__main__':
