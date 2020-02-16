@@ -8,7 +8,7 @@ from logger import create_logger
 from photos import reload_photos, list_photos, get_photo_path, count_photos
 from faces import reload_faces
 from persons import list_persons, get_person_image, list_person_photos, count_person_photos,\
-rename_person, merge_persons, remove_persons, link_photos_to_person
+rename_person, merge_persons, remove_persons, link_photos_to_person, create_person
 
 app = Flask(__name__)
 
@@ -111,8 +111,11 @@ def linkPhotosToPerson():
     photoIds = query["photoIds"]
     personId = query["personId"]
     newPersonId = query.get("newPersonId")
+    newPersonName = query.get("newPersonName")
     if not personId:
         return make_response("personId是必须的", 400)
+    if newPersonName:
+        newPersonId = create_person(newPersonName)
     link_photos_to_person(photoIds, personId, newPersonId)
     return {"data": "OK"}
 

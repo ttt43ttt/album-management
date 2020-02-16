@@ -91,6 +91,18 @@ def count_person_photos(personId):
   finally:
     db.put_connection(conn)
 
+def create_person(name):
+  "创建Person,返回person ID"
+  conn = db.get_connection()
+  try:
+    with conn.cursor() as cursor:
+      cursor.execute("insert into tbl_person (name) values (%s) returning id", (name,))
+      row = cursor.fetchone()
+      conn.commit()
+      return row[0]
+  finally:
+    db.put_connection(conn)
+
 
 def rename_person(personId, name):
   conn = db.get_connection()

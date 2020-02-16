@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'dva';
-import { Modal, Spin } from 'antd';
+import { Modal, Spin, Input } from 'antd';
 import SelectableImage from '@/components/SelectableImage';
 import InputToggle from '@/components/InputToggle';
 import styles from './style.less';
@@ -14,7 +14,8 @@ class LinkPhotosModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedKey: null,
+      selectedKey: undefined,
+      newPersonName: undefined,
     };
   }
 
@@ -24,24 +25,25 @@ class LinkPhotosModal extends React.Component {
 
   render() {
     const { persons, isLoading, isSaving, personId, photoIds, onHide } = this.props;
-    const { selectedKey } = this.state;
+    const { selectedKey, newPersonName } = this.state;
 
     return (
       <Modal
         visible
-        title="关联照片到人物"
+        title="移动照片到人物集合"
         onCancel={onHide}
         onOk={() => {
           this.props
             .dispatch({
               type: 'personPhoto/linkPhotosToPerson',
-              payload: { photoIds, personId, newPersonId: selectedKey },
+              payload: { photoIds, personId, newPersonId: selectedKey, newPersonName },
             })
             .then(onHide);
         }}
-        okButtonProps={{ disabled: !selectedKey, loading: isSaving }}
+        okButtonProps={{ disabled: !(selectedKey || newPersonName), loading: isSaving }}
       >
         <Spin spinning={isLoading}>
+          <span>选择已有的人物集合</span>
           <div className={styles.personGallery}>
             {persons
               .filter(({ id }) => id + '' !== personId + '')
@@ -56,9 +58,9 @@ class LinkPhotosModal extends React.Component {
                       selected={isSelected}
                       onSelectedChange={selected => {
                         if (selected) {
-                          this.setState({ selectedKey: id });
+                          this.setState({ selectedKey: id, newPersonName: undefined });
                         } else {
-                          this.setState({ selectedKey: null });
+                          this.setState({ selectedKey: undefined, newPersonName: undefined });
                         }
                       }}
                     />
@@ -83,6 +85,16 @@ class LinkPhotosModal extends React.Component {
               })}
           </div>
         </Spin>
+        <div style={{ borderTop: '1px solid #eee', paddingTop: '8px' }}>
+          <span>创建新的人物集合</span>
+          <Input
+            value={newPersonName}
+            placeholder="请输入人名"
+            onChange={e => {
+              this.setState({ selectedKey: undefined, newPersonName: e.target.value });
+            }}
+          />
+        </div>
       </Modal>
     );
   }

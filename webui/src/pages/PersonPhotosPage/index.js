@@ -1,7 +1,7 @@
 import React from 'react';
 import * as R from 'ramda';
 import { connect } from 'dva';
-import { Button, Spin, Pagination } from 'antd';
+import { Button, Spin, Pagination, Menu, Dropdown, Icon } from 'antd';
 import PhotoGallery from '@/components/PhotoGallery';
 import LinkPhotosModal from '@/pages/PersonsPage/LinkPhotosModal';
 import styles from './style.less';
@@ -45,12 +45,22 @@ class Page extends React.Component {
     const { selectedKeys, linkPhotosModal } = this.state;
     const { pageNumber, pageSize } = query;
 
-    return (
-      <div>
-        <div className={styles.actionBar}>
-          <Button
-            disabled={selectedKeys.length < 1}
-            onClick={() => {
+    const menu = (
+      <Menu
+        onClick={({ key }) => {
+          switch (key) {
+            case 'remove':
+              this.props.dispatch({
+                type: 'personPhoto/linkPhotosToPerson',
+                payload: {
+                  photoIds: selectedKeys,
+                  personId: this.getPersonId(),
+                  newPersonId: null,
+                },
+              });
+              break;
+
+            case 'linkToOthers':
               this.setState({
                 linkPhotosModal: {
                   visible: true,
@@ -58,10 +68,25 @@ class Page extends React.Component {
                   photoIds: selectedKeys,
                 },
               });
-            }}
-          >
-            不是此人...
-          </Button>
+              break;
+            default:
+              break;
+          }
+        }}
+      >
+        <Menu.Item key="linkToOthers">移动到他人集合...</Menu.Item>
+        <Menu.Item key="remove">从此人集合中移除</Menu.Item>
+      </Menu>
+    );
+
+    return (
+      <div>
+        <div className={styles.actionBar}>
+          <Dropdown overlay={menu} disabled={selectedKeys.length < 1}>
+            <Button>
+              不是此人 <Icon type="down" />
+            </Button>
+          </Dropdown>
         </div>
         <Spin spinning={isLoading}>
           <PhotoGallery
