@@ -9,16 +9,16 @@ def list_persons():
   conn = db.get_connection()
   try:
     sql = (
-      "select DISTINCT ON (person.id)"
-      " person.id, person.name, photo.path, face.location"
+      "select person.id, person.name, count(photo.id)"
       " from tbl_person person"
       " inner join tbl_face face on person.id = face.person_id"
       " inner join tbl_photo photo on face.photo_id = photo.id"
+      " group by person.id"
     )
     with conn.cursor() as cursor:
       cursor.execute(sql)
       rows = cursor.fetchall() 
-      return [{"id": row[0], "name": row[1]} for row in rows]
+      return [{"id": row[0], "name": row[1], "photoCount": row[2]} for row in rows]
   finally:
     db.put_connection(conn)
 
@@ -53,4 +53,21 @@ def get_person_image(personId):
       return path
   finally:
     db.put_connection(conn)
-  
+
+
+def list_person_photos(personId):
+  "返回包含某个人物的照片列表"
+  conn = db.get_connection()
+  try:
+    sql = (
+      "select photo.id"
+      " from tbl_photo photo"
+      " inner join tbl_face face on photo.id = face.photo_id"
+      " where face.person_id = %s"
+    )
+    with conn.cursor() as cursor:
+      cursor.execute(sql, (personId,))
+      rows = cursor.fetchall()
+      return [{"id": row[0]} for row in rows]
+  finally:
+    db.put_connection(conn)

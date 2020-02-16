@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'dva';
 import { Spin } from 'antd';
+import { Link } from 'react-router-dom';
 import styles from './style.less';
 
 @connect(({ person, loading }) => ({
@@ -19,10 +20,12 @@ class Page extends React.Component {
     return (
       <Spin spinning={isLoading}>
         <div className={styles.personGallery}>
-          {persons.map(({ id, url }) => (
+          {persons.map(({ id, url, photoCount }) => (
             <div key={id} className={styles.personCard}>
-              <img alt={id} src={url} className={styles.personImage} />
-              <div>{id}</div>
+              <Link to={`/persons/${id}`}>
+                <img alt={id} src={url} className={styles.personImage} />
+              </Link>
+              <div>{photoCount}</div>
             </div>
           ))}
         </div>

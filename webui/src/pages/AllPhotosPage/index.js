@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'dva';
 import { Spin, Pagination } from 'antd';
+import PhotoGallery from '@/components/PhotoGallery';
 import styles from './style.less';
 
 @connect(({ photo, loading }) => ({
@@ -36,13 +37,7 @@ class Page extends React.Component {
     return (
       <div className={styles.content}>
         <Spin spinning={isLoading}>
-          <div className={styles.photoGallery}>
-            {photos.map(({ id, url }) => (
-              <div key={id} className={styles.photoContainer}>
-                <img alt={url} src={url} className={styles.photo} />
-              </div>
-            ))}
-          </div>
+          <PhotoGallery photos={photos} />
           {meta.total === 0 && <div>没有发现照片</div>}
           {meta.total > 0 && (
             <div className={styles.pager}>

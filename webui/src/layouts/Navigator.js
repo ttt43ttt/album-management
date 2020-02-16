@@ -10,8 +10,8 @@ class Navigator extends React.Component {
         router.push('/all-photos');
         break;
 
-      case 'face-photos':
-        router.push('/face-photos');
+      case 'persons':
+        router.push('/persons');
         break;
 
       default:
@@ -20,10 +20,11 @@ class Navigator extends React.Component {
   };
 
   render() {
+    const currentPath = window.location.hash.substring(2);
     return (
       <Menu
         mode="inline"
-        defaultSelectedKeys={[window.location.hash.substring(2)]}
+        selectedKeys={[currentPath]}
         className={styles.navigator}
         onSelect={this.onSelect}
       >
@@ -31,9 +32,9 @@ class Navigator extends React.Component {
           <Icon type="camera" />
           <span>所有照片</span>
         </Menu.Item>
-        <Menu.Item key="face-photos">
+        <Menu.Item key="persons">
           <Icon type="team" />
-          <span>人脸照片</span>
+          <span>人物照片</span>
         </Menu.Item>
       </Menu>
     );

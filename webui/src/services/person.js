@@ -6,3 +6,10 @@ export async function listPersons(payload) {
     body: payload,
   });
 }
+
+export async function listPhotos(personId, payload) {
+  return request(`/api/persons/${personId}/photos/list`, {
+    method: 'POST',
+    body: payload,
+  });
+}
