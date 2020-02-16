@@ -34,3 +34,10 @@ export async function removePersons(ids) {
     body: { ids },
   });
 }
+
+export async function linkPhotosToPerson(payload) {
+  return request('/api/persons/link-photos', {
+    method: 'POST',
+    body: payload,
+  });
+}

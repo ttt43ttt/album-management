@@ -8,7 +8,7 @@ from logger import create_logger
 from photos import reload_photos, list_photos, get_photo_path, count_photos
 from faces import reload_faces
 from persons import list_persons, get_person_image, list_person_photos, count_person_photos,\
-rename_person, merge_persons, remove_persons
+rename_person, merge_persons, remove_persons, link_photos_to_person
 
 app = Flask(__name__)
 
@@ -20,20 +20,17 @@ logger = logging.getLogger("logger")
 def showHello():
     return "Hello"
 
-
 @app.route('/api/photos/reload', methods=['POST'])
 def reloadPhotos():
     "Reload photos from disk"
     reload_photos()
     return {"data": "OK"}
 
-
 @app.route('/api/faces/reload', methods=['POST'])
 def reloadFaces():
     "Reload faces from photos"
     reload_faces()
     return {"data": "OK"}
-
 
 @app.route('/api/photos/list', methods=['POST'])
 def listPhotos():
@@ -50,14 +47,12 @@ def listPhotos():
         photo["url"] = f"/api/photos/{id}/content"
     return {"data": photos, "meta": meta}
 
-
 @app.route('/api/photos/<id>/content', methods=['GET'])
 def showPhotoContent(id):
     imgPath = get_photo_path(id)
     if imgPath is None:
         return make_response("", 404)
     return send_file(imgPath)
-
 
 @app.route('/api/persons/list', methods=['POST'])
 def listPersons():
@@ -95,7 +90,6 @@ def showPersonImage(id):
         return make_response("", 404)
     return send_file(imgPath)
 
-
 @app.route('/api/persons/<id>/photos/list', methods=['POST'])
 def listPersonPhotos(id):
     query = request.json
@@ -111,6 +105,16 @@ def listPersonPhotos(id):
         photo["url"] = f"/api/photos/{id}/content"
     return {"data": photos, "meta": meta}
 
+@app.route('/api/persons/link-photos', methods=['POST'])
+def linkPhotosToPerson():
+    query = request.json
+    photoIds = query["photoIds"]
+    personId = query["personId"]
+    newPersonId = query.get("newPersonId")
+    if not personId:
+        return make_response("personId是必须的", 400)
+    link_photos_to_person(photoIds, personId, newPersonId)
+    return {"data": "OK"}
 
 if __name__ == '__main__':
     logger.info("service starts...")

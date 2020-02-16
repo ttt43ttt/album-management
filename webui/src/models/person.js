@@ -49,7 +49,7 @@ export default {
         yield call(removePersons, ids);
         yield put({ type: 'reload' });
       } catch (error) {
-        message.error('移出人物失败');
+        message.error('移除人物失败');
       }
     },
   },

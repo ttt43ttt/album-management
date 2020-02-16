@@ -125,3 +125,14 @@ def remove_persons(ids):
     conn.commit()
   finally:
     db.put_connection(conn)
+
+def link_photos_to_person(photoIds, personId, newPersonId):
+  "关联人物和照片, newPersonId可以为null"
+  conn = db.get_connection()
+  try:
+    with conn.cursor() as cursor:
+      cursor.execute("update tbl_face set person_id=%s where person_id=%s and photo_id in %s",
+      (newPersonId, personId, tuple(photoIds)))
+    conn.commit()
+  finally:
+    db.put_connection(conn)

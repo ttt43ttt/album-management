@@ -51,7 +51,7 @@ class Page extends React.Component {
               this.setState({ selectedKeys: [] });
             }}
           >
-            移出
+            移除
           </Button>
         </div>
         <Spin spinning={isLoading}>
@@ -65,7 +65,7 @@ class Page extends React.Component {
                     src={url}
                     className={styles.personImage}
                     selected={isSelected}
-                    onSelectChange={selected => {
+                    onSelectedChange={selected => {
                       if (selected) {
                         this.setState({ selectedKeys: R.append(id, selectedKeys) });
                       } else {
