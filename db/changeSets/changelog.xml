@@ -13,9 +13,19 @@
             <column name="path" type="varchar">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_updated" type="timestamp">
+            <column name="digest" type="varchar(40)">
                 <constraints nullable="false"/>
             </column>
+            <column name="taken_time" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="last_scanned" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false"
+                    name="face_detect_done"
+                    type="boolean"/>
         </createTable>
         <addUniqueConstraint
             columnNames="path"
@@ -27,7 +37,7 @@
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(50)" />
+            <column name="name" type="varchar(50)"/>
         </createTable>
 
         <createTable tableName="tbl_face">
@@ -37,19 +47,11 @@
             <column name="photo_id" type="bigint">
                 <constraints nullable="false" foreignKeyName="fk_face_photo" references="tbl_photo(id)"/>
             </column>
-<!--            <column name="face_index" type="int">-->
-<!--                <constraints nullable="false"/>-->
-<!--            </column>-->
             <column name="location" type="json"/>
             <column name="embedding" type="json"/>
             <column name="person_id" type="bigint">
                 <constraints foreignKeyName="fk_face_person" references="tbl_person(id)"/>
             </column>
         </createTable>
-<!--        <addUniqueConstraint-->
-<!--            columnNames="photo_id, face_index"-->
-<!--            constraintName="tbl_face_photo_face_index_unique_constraint"-->
-<!--            tableName="tbl_photo"-->
-<!--        />-->
     </changeSet>
 </databaseChangeLog>

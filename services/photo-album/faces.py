@@ -12,7 +12,7 @@ def reload_faces():
   conn = db.get_connection()
   try:
     with conn.cursor() as cursor:
-      cursor.execute("select id, path from tbl_photo")
+      cursor.execute("select id, path from tbl_photo where face_detect_done=false")
       rows = cursor.fetchall()
       for row in rows:
         photoId = row[0]
@@ -53,6 +53,9 @@ def encode_face(photoId, photoPath, cursor):
     )
     for i, (box, enc) in enumerate(zip(boxes, encodings)):
       cursor.execute(sql, {"photoId": photoId, "box": Json(box), "embedding": Json(enc.tolist())})
+    
+    # 标记photo已经识别过人脸
+    cursor.execute("update tbl_photo set face_detect_done=true where id=%s", (photoId,))
 
 
 def cluster_face(cursor):

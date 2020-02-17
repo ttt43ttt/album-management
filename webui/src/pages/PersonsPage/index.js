@@ -56,6 +56,7 @@ class Page extends React.Component {
         </div>
         <Spin spinning={isLoading}>
           <div className={styles.personGallery}>
+            {persons.length === 0 && <div>暂时没有检测到人像</div>}
             {persons.map(({ id, name, url, photoCount }) => {
               const isSelected = selectedKeys.indexOf(id) > -1;
               return (
