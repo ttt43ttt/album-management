@@ -64,6 +64,7 @@ def list_person_photos(personId, limit=20, offset=0):
       " from tbl_photo photo"
       " inner join tbl_face face on photo.id = face.photo_id"
       " where face.person_id = %s"
+      " order by photo.taken_time desc"
       " LIMIT %s OFFSET %s"
     )
     with conn.cursor() as cursor:

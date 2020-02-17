@@ -96,7 +96,7 @@ def count_photos():
 def list_photos(limit = 20, offset = 0):
   conn = db.get_connection()
   try:
-    sql = f"SELECT id from tbl_photo LIMIT {limit} OFFSET {offset}"
+    sql = f"SELECT id from tbl_photo order by taken_time desc LIMIT {limit} OFFSET {offset}"
     with conn.cursor() as cursor:
       cursor.execute(sql)
       rows = cursor.fetchall() 
