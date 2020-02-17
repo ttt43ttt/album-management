@@ -48,11 +48,11 @@ def encode_face(photoId, photoPath, cursor):
     cursor.execute("DELETE from tbl_face where photo_id=%s", (photoId,))
 
     sql = (
-      "INSERT INTO tbl_face (photo_id, location, embedding)"
-      " VALUES (%(photoId)s, %(box)s, %(embedding)s)"
+      "INSERT INTO tbl_face (photo_id, location, encoding)"
+      " VALUES (%(photoId)s, %(box)s, %(encoding)s)"
     )
     for i, (box, enc) in enumerate(zip(boxes, encodings)):
-      cursor.execute(sql, {"photoId": photoId, "box": Json(box), "embedding": Json(enc.tolist())})
+      cursor.execute(sql, {"photoId": photoId, "box": Json(box), "encoding": Json(enc.tolist())})
     
     # 标记photo已经识别过人脸
     cursor.execute("update tbl_photo set face_detect_done=true where id=%s", (photoId,))
@@ -61,7 +61,7 @@ def encode_face(photoId, photoPath, cursor):
 def cluster_face(cursor):
   "人脸聚类"
   # 只取未知人脸
-  cursor.execute("select id, embedding from tbl_face where person_id is NULL")
+  cursor.execute("select id, encoding from tbl_face where person_id is NULL")
   rows = cursor.fetchall()
   faces = [{"id": row[0], "encoding": row[1]} for row in rows]
   encodings = [face["encoding"] for face in faces]
