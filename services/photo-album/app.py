@@ -52,7 +52,11 @@ def showPhotoContent(id):
     imgPath = get_photo_path(id)
     if imgPath is None:
         return make_response("", 404)
-    return send_file(imgPath)
+    try:
+        return send_file(imgPath)
+    except Exception as e:
+        logger.warning(e)
+        return make_response("", 404)
 
 @app.route('/api/persons/list', methods=['POST'])
 def listPersons():

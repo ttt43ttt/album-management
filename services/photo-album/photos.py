@@ -10,8 +10,10 @@ from logger import get_logger
 
 
 def reload_photos():
-  imagePaths = paths.list_images(settings.USER_PHOTO_HOME)
   logger = get_logger()
+  logger.info("reload_photos starts")
+  reloadStartTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+  imagePaths = paths.list_images(settings.USER_PHOTO_HOME)
   conn = db.get_connection()
   try:
     with conn.cursor() as cursor:
@@ -35,7 +37,7 @@ def reload_photos():
           newDigest = get_file_digest(imagePath)
           if newDigest == oldDigest:
             # digest一致，只更新last_scanned
-            cursor.execute("update tbl_photo set last_scanned=NOW()")
+            cursor.execute("update tbl_photo set last_scanned=NOW() where id=%s", (id,))
           else:
             # digest不一致，删除老的photo及关联的face
             cursor.execute("delete from tbl_face where photo_id=%s", (id,))
@@ -49,6 +51,15 @@ def reload_photos():
             cursor.execute(sql, {"path": imagePath, "digest": newDigest, "takenTime": takenTime})
         # logger.info(imagePath)
         conn.commit()
+      # 删除文件不存在的photo记录及关联的face
+      cursor.execute("select id from tbl_photo where last_scanned < TIMESTAMP %s", (reloadStartTime,))
+      rows = cursor.fetchall()
+      for row in rows:
+        id = row[0]
+        cursor.execute("delete from tbl_face where photo_id=%s", (id,))
+        cursor.execute("delete from tbl_photo where id=%s", (id,))
+      conn.commit()
+    logger.info("reload_photos done")
   finally:
     db.put_connection(conn)
 
