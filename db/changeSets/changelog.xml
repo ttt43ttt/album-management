@@ -25,7 +25,9 @@
             </column>
             <column defaultValueBoolean="false"
                     name="face_detect_done"
-                    type="boolean"/>
+                    type="boolean">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <addUniqueConstraint
             columnNames="path"
