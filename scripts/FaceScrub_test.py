@@ -59,7 +59,7 @@ def encode_faces(faceFolder):
         image = cv2.imread(imagePath)
         rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         (h, w) = image.shape[:2]
-        #(top, right, bottom, left)
+        # (top, right, bottom, left)
         boxes = [(0, w, h, 0)]
         # compute the facial embedding for the face
         encodings = face_recognition.face_encodings(rgb, boxes)
@@ -84,9 +84,9 @@ def cluster_faces(data):
 
 
 # %%
-testName = "FaceScrub-faces-10M-860-01"
-faceFolder = f"C:\\code\\github.com\\datasets\\{testName}"
-encodingsFile = f"C:\\code\\github.com\\datasets\\{testName}.encodings.pickle"
+testName = "FaceScrub-faces-10-100-01"
+faceFolder = f"C:\\datasets\\{testName}"
+encodingsFile = f"C:\\datasets\\{testName}.encodings.pickle"
 
 # %%
 data = encode_faces(faceFolder)
