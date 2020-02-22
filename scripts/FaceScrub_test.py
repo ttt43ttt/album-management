@@ -85,6 +85,7 @@ def cluster_faces(data, eps=0.5, min_samples=5):
 
 # %%
 testName = "FaceScrub-faces-10-100-01"
+# testName = "FaceScrub-faces-10F-678-01"
 # testName = "CASIA-FaceV5(000-099)-faces-hog"
 
 faceFolder = f"C:\\datasets\\face-tests\\{testName}"
@@ -115,6 +116,7 @@ def evaluate():
                                                            labels_pred)
     # p("fm_score", fm_score)
     # p("ar_score", ar_score)
+    # p("ami_score", ami_score)
     # p("homo_score", homo_score)
     # p("comp_score", comp_score)
     # p("v_score", v_score)
@@ -128,10 +130,11 @@ def evaluate():
 # %%
 # 聚类并且评价
 random.shuffle(data)
-# for paramx in np.arange(0.2, 0.4, 0.005):
-#     clt = cluster_faces(data, eps=paramx, min_samples=3)
-for paramx in range(1, 20):
-    clt = cluster_faces(data, eps=0.5, min_samples=paramx)
+for paramx in np.arange(0.2, 0.4, 0.005):
+    clt = cluster_faces(data, eps=paramx, min_samples=3)
+    # for paramx in range(1, 20):
+    #     clt = cluster_faces(data, eps=0.5, min_samples=paramx)
+    clt = cluster_faces(data, eps=0.5, min_samples=5)
     labels_true = [d['labelId'] for d in data]
     labels_pred = list(clt.labels_)
     for (i, label) in enumerate(labels_pred):
