@@ -20,9 +20,10 @@ from sklearn import cluster, metrics
 # %%
 def random_choose_test_data():
     "随机选择测试数据"
-    fromFolder = r"C:\code\github.com\datasets\FaceScrub\actresses\faces"
-    destFolder = r"C:\code\github.com\datasets\FaceScrub-faces-10F-01"
-    numPersons = 10
+    # fromFolder = r"C:\code\github.com\datasets\FaceScrub\actresses\faces"
+    fromFolder = r"C:\code\github.com\datasets\FaceScrub\actors\faces"
+    destFolder = r"C:\code\github.com\datasets\FaceScrub-faces-10-100-01"
+    numPersons = 5
 
     folders = os.listdir(fromFolder)
     random.shuffle(folders)
@@ -31,12 +32,6 @@ def random_choose_test_data():
         folder = folders[i]
         shutil.copytree(os.path.join(fromFolder, folder),
                         os.path.join(destFolder, folder))
-
-
-# %%
-testName = "FaceScrub-faces-5M5F-892-01"
-faceFolder = f"C:\\code\\github.com\\datasets\\{testName}"
-encodingsFile = f"C:\\code\\github.com\\datasets\\{testName}.encodings.pickle"
 
 
 # %%
@@ -81,12 +76,6 @@ def encode_faces(faceFolder):
 
 
 # %%
-data = encode_faces(faceFolder)
-pickle.dump(data, open(encodingsFile, "wb"))
-data = pickle.load(open(encodingsFile, "rb"))
-
-
-# %%
 def cluster_faces(data):
     encodings = [d["encoding"] for d in data]
     clt = cluster.DBSCAN(metric="euclidean", eps=0.5, min_samples=5, n_jobs=-1)
@@ -95,14 +84,33 @@ def cluster_faces(data):
 
 
 # %%
+testName = "FaceScrub-faces-10M-860-01"
+faceFolder = f"C:\\code\\github.com\\datasets\\{testName}"
+encodingsFile = f"C:\\code\\github.com\\datasets\\{testName}.encodings.pickle"
+
+# %%
+data = encode_faces(faceFolder)
+pickle.dump(data, open(encodingsFile, "wb"))
+
+# %%
+data = pickle.load(open(encodingsFile, "rb"))
+
+# %%
 random.shuffle(data)
 clt = cluster_faces(data)
 labels_true = [d['labelId'] for d in data]
 labels_pred = list(clt.labels_)
-print(labels_true)
-print(labels_pred)
-fmi_score = metrics.fowlkes_mallows_score(labels_true, labels_pred)
-print(fmi_score)
+# print(labels_true)
+# print(labels_pred)
 
+fm_score = metrics.fowlkes_mallows_score(labels_true, labels_pred)
+ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
+ami_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
+(homo_score, comp_score,
+ v_score) = metrics.homogeneity_completeness_v_measure(labels_true,
+                                                       labels_pred)
+print(
+    f"fm_score: {fm_score}, ar_score: {ar_score}, ami_score: {ami_score}, homo_score: {homo_score}, comp_score: {comp_score}, v_score: {v_score}"
+)
 
 # %%
