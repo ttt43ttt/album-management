@@ -12,7 +12,7 @@ const webpackConfig = require('./webpack.config');
 const proxyConfig = require('./server-proxy.config');
 
 // ============= ENVIRONMENT VARIABLES =============
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 10010;
 const host = process.env.HOST || 'localhost';
 const apiTarget = process.env.API; // API=mock or http://localhost:8080
 

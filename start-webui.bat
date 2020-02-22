@@ -1,0 +1,2 @@
+cd webui
+npm start
