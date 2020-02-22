@@ -19,7 +19,7 @@ from sklearn import cluster, metrics
 
 # %%
 def random_choose_test_data():
-    "随机选择测试数据"
+    """随机选择测试数据"""
     # fromFolder = r"C:\code\github.com\datasets\FaceScrub\actresses\faces"
     fromFolder = r"C:\code\github.com\datasets\FaceScrub\actors\faces"
     destFolder = r"C:\code\github.com\datasets\FaceScrub-faces-10-100-01"
@@ -36,7 +36,7 @@ def random_choose_test_data():
 
 # %%
 def encode_faces(faceFolder):
-    "生成编码"
+    """生成编码"""
     faces = []
     persons = os.listdir(faceFolder)
     # 按人物目录遍历，生成labelId
