@@ -76,41 +76,56 @@ def encode_faces(faceFolder):
 
 
 # %%
-def cluster_faces(data):
+def cluster_faces(data, eps=0.5, min_samples=5):
     encodings = [d["encoding"] for d in data]
-    clt = cluster.DBSCAN(metric="euclidean", eps=0.5, min_samples=5, n_jobs=-1)
+    clt = cluster.DBSCAN(metric="euclidean", eps=eps, min_samples=min_samples, n_jobs=-1)
     clt.fit(encodings)
     return clt
 
 
 # %%
-testName = "FaceScrub-faces-10-100-01"
+testName = "FaceScrub-faces-5M5F-892-01"
 faceFolder = f"C:\\datasets\\{testName}"
 encodingsFile = f"C:\\datasets\\{testName}.encodings.pickle"
+re_encode_faces = False
 
 # %%
-data = encode_faces(faceFolder)
-pickle.dump(data, open(encodingsFile, "wb"))
+if re_encode_faces:
+    data = encode_faces(faceFolder)
+    pickle.dump(data, open(encodingsFile, "wb"))
 
 # %%
 data = pickle.load(open(encodingsFile, "rb"))
 
-# %%
-random.shuffle(data)
-clt = cluster_faces(data)
-labels_true = [d['labelId'] for d in data]
-labels_pred = list(clt.labels_)
-# print(labels_true)
-# print(labels_pred)
 
-fm_score = metrics.fowlkes_mallows_score(labels_true, labels_pred)
-ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
-ami_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
-(homo_score, comp_score,
- v_score) = metrics.homogeneity_completeness_v_measure(labels_true,
-                                                       labels_pred)
-print(
-    f"fm_score: {fm_score}, ar_score: {ar_score}, ami_score: {ami_score}, homo_score: {homo_score}, comp_score: {comp_score}, v_score: {v_score}"
-)
+# %%
+def evaluate():
+    def p(name, score):
+        print(f"{name}: {round(score, 4)}")
+
+    fm_score = metrics.fowlkes_mallows_score(labels_true, labels_pred)
+    ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
+    # ami_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
+    (homo_score, comp_score,
+     v_score) = metrics.homogeneity_completeness_v_measure(labels_true,
+                                                           labels_pred)
+    # p("fm_score", fm_score)
+    # p("ar_score", ar_score)
+    # p("homo_score", homo_score)
+    # p("comp_score", comp_score)
+    # p("v_score", v_score)
+    print(
+        f"{round(eps, 2)}\t{round(fm_score, 4)}\t{round(ar_score, 4)}\t{round(homo_score, 4)}\t{round(comp_score, 4)}\t{round(v_score, 4)}")
+
+
+random.shuffle(data)
+for eps in np.arange(0.3, 0.7, 0.01):
+    # print(f'====== eps: {eps} =======')
+    clt = cluster_faces(data, eps=eps)
+    labels_true = [d['labelId'] for d in data]
+    labels_pred = list(clt.labels_)
+    # print(labels_true)
+    # print(labels_pred)
+    evaluate()
 
 # %%
