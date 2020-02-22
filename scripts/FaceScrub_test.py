@@ -84,18 +84,22 @@ def cluster_faces(data, eps=0.5, min_samples=5):
 
 
 # %%
-testName = "FaceScrub-faces-5M5F-892-01"
-faceFolder = f"C:\\datasets\\{testName}"
-encodingsFile = f"C:\\datasets\\{testName}.encodings.pickle"
+testName = "FaceScrub-faces-10-100-01"
+# testName = "CASIA-FaceV5(000-099)-faces-hog"
+
+faceFolder = f"C:\\datasets\\face-tests\\{testName}"
+encodingsFile = f"C:\\datasets\\face-tests\\{testName}.encodings.pickle"
+
 re_encode_faces = False
 
 # %%
-if re_encode_faces:
+# 开始人脸编码
+data = None
+if os.path.exists(encodingsFile):
+    data = pickle.load(open(encodingsFile, "rb"))
+if data is None or re_encode_faces:
     data = encode_faces(faceFolder)
     pickle.dump(data, open(encodingsFile, "wb"))
-
-# %%
-data = pickle.load(open(encodingsFile, "rb"))
 
 
 # %%
@@ -114,16 +118,26 @@ def evaluate():
     # p("homo_score", homo_score)
     # p("comp_score", comp_score)
     # p("v_score", v_score)
+
+    # homogeneity: each cluster contains only members of a single class.
+    # completeness: all members of a given class are assigned to the same cluster.
     print(
-        f"{round(eps, 2)}\t{round(fm_score, 4)}\t{round(ar_score, 4)}\t{round(homo_score, 4)}\t{round(comp_score, 4)}\t{round(v_score, 4)}")
+        f"{round(paramx, 4)}\t{round(fm_score, 4)}\t{round(ar_score, 4)}\t{round(homo_score, 4)}\t{round(comp_score, 4)}\t{round(v_score, 4)}")
 
 
+# %%
+# 聚类并且评价
 random.shuffle(data)
-for eps in np.arange(0.3, 0.7, 0.01):
-    # print(f'====== eps: {eps} =======')
-    clt = cluster_faces(data, eps=eps)
+# for paramx in np.arange(0.2, 0.4, 0.005):
+#     clt = cluster_faces(data, eps=paramx, min_samples=3)
+for paramx in range(1, 20):
+    clt = cluster_faces(data, eps=0.5, min_samples=paramx)
     labels_true = [d['labelId'] for d in data]
     labels_pred = list(clt.labels_)
+    for (i, label) in enumerate(labels_pred):
+        if label == -1:
+            # -1表明没有所属的cluster，单独给一个标签
+            labels_pred[i] = len(labels_pred) + i
     # print(labels_true)
     # print(labels_pred)
     evaluate()
