@@ -20,10 +20,11 @@ from sklearn import cluster, metrics
 # %%
 def random_choose_test_data():
     """随机选择测试数据"""
-    # fromFolder = r"C:\code\github.com\datasets\FaceScrub\actresses\faces"
-    fromFolder = r"C:\code\github.com\datasets\FaceScrub\actors\faces"
-    destFolder = r"C:\code\github.com\datasets\FaceScrub-faces-10-100-01"
-    numPersons = 5
+    # fromFolder = r"C:\datasets\FaceScrub\actors\faces"
+    # fromFolder = r"C:\datasets\FaceScrub\actresses\faces"
+    fromFolder = r"C:\datasets\FaceScrub-faces"
+    destFolder = r"C:\datasets\face-tests\FaceScrub-faces-mix-10-05"
+    numPersons = 10
 
     folders = os.listdir(fromFolder)
     random.shuffle(folders)
@@ -84,9 +85,22 @@ def cluster_faces(data, eps=0.5, min_samples=5):
 
 
 # %%
-testName = "FaceScrub-faces-10-100-01"
+# testName = "FaceScrub-faces-10-100-01"
+
+# testName = "FaceScrub-faces-10M-860-01"
 # testName = "FaceScrub-faces-10F-678-01"
+# testName = "FaceScrub-faces-5M5F-892-01"
+
+# testName = "FaceScrub-faces-20M-1852-01"
+# testName = "FaceScrub-faces-20F-1622-01"
+# testName = "FaceScrub-faces-10M10F-1677-01"
+
+testName = "FaceScrub-faces-mix-10-05"
+
 # testName = "CASIA-FaceV5(000-099)-faces-hog"
+
+# testName = "JAFFE-faces-hog"
+# testName = "JAFFE-faces-cnn"
 
 faceFolder = f"C:\\datasets\\face-tests\\{testName}"
 encodingsFile = f"C:\\datasets\\face-tests\\{testName}.encodings.pickle"
@@ -123,18 +137,18 @@ def evaluate():
 
     # homogeneity: each cluster contains only members of a single class.
     # completeness: all members of a given class are assigned to the same cluster.
-    print(
-        f"{round(paramx, 4)}\t{round(fm_score, 4)}\t{round(ar_score, 4)}\t{round(homo_score, 4)}\t{round(comp_score, 4)}\t{round(v_score, 4)}")
+    # print(f"{round(paramx, 4)}\t{round(fm_score, 4)}\t{round(ar_score, 4)}\t{round(homo_score, 4)}\t{round(comp_score, 4)}\t{round(v_score, 4)}")
+    print(f"{round(paramx, 4)}\t{round(ar_score, 4)}")
 
 
 # %%
 # 聚类并且评价
 random.shuffle(data)
-for paramx in np.arange(0.2, 0.4, 0.005):
-    clt = cluster_faces(data, eps=paramx, min_samples=3)
+for paramx in np.arange(0.2, 0.7, 0.01):
+    clt = cluster_faces(data, eps=paramx, min_samples=5)
     # for paramx in range(1, 20):
     #     clt = cluster_faces(data, eps=0.5, min_samples=paramx)
-    clt = cluster_faces(data, eps=0.5, min_samples=5)
+    # clt = cluster_faces(data, eps=0.5, min_samples=5)
     labels_true = [d['labelId'] for d in data]
     labels_pred = list(clt.labels_)
     for (i, label) in enumerate(labels_pred):
