@@ -55,7 +55,7 @@ def detect_faces():
 
 # %%
 srcFolder = r"C:\datasets\CASIA-FaceV5(000-099)"
-destFolder = r"C:\datasets\CASIA-FaceV5-tests\CASIA-FaceV5(000-099)-faces-hog"
+destFolder = r"C:\datasets\face-tests\CASIA-FaceV5(000-099)-faces-hog"
 detect_model = "hog"  # hog or cnn
 
 detect_faces()
