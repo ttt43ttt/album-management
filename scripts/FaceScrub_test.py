@@ -11,6 +11,7 @@ import os
 import shutil
 import pickle
 import cv2
+import dlib
 import face_recognition
 import numpy as np
 from imutils import paths
@@ -77,11 +78,22 @@ def encode_faces(faceFolder):
 
 
 # %%
-def cluster_faces(data, eps=0.5, min_samples=5):
+def cluster_faces_by_DBSCAN(data, eps=0.5, min_samples=5):
     encodings = [d["encoding"] for d in data]
     clt = cluster.DBSCAN(metric="euclidean", eps=eps, min_samples=min_samples, n_jobs=-1)
     clt.fit(encodings)
-    return clt
+    labels = list(clt.labels_)
+    for (i, label) in enumerate(labels):
+        if label == -1:
+            # -1是噪声点，表明没有所属的cluster，单独给一个标签
+            labels[i] = len(labels) + i
+    return labels
+
+
+def cluster_faces_by_CW(data, threshold=0.5):
+    encodings = [dlib.vector(d["encoding"]) for d in data]
+    labels = dlib.chinese_whispers_clustering(encodings, threshold)
+    return labels
 
 
 # %%
@@ -89,13 +101,13 @@ def cluster_faces(data, eps=0.5, min_samples=5):
 
 # testName = "FaceScrub-faces-10M-860-01"
 # testName = "FaceScrub-faces-10F-678-01"
-# testName = "FaceScrub-faces-5M5F-892-01"
+testName = "FaceScrub-faces-5M5F-892-01"
 
 # testName = "FaceScrub-faces-20M-1852-01"
 # testName = "FaceScrub-faces-20F-1622-01"
 # testName = "FaceScrub-faces-10M10F-1677-01"
 
-testName = "FaceScrub-faces-mix-10-05"
+# testName = "FaceScrub-faces-mix-10-01"
 
 # testName = "CASIA-FaceV5(000-099)-faces-hog"
 
@@ -144,17 +156,13 @@ def evaluate():
 # %%
 # 聚类并且评价
 random.shuffle(data)
-for paramx in np.arange(0.2, 0.7, 0.01):
-    clt = cluster_faces(data, eps=paramx, min_samples=5)
+for paramx in np.arange(0.8, 0.99, 0.01):
+    labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=5)
+    # labels_pred = cluster_faces_by_CW(data, threshold=paramx)
     # for paramx in range(1, 20):
     #     clt = cluster_faces(data, eps=0.5, min_samples=paramx)
     # clt = cluster_faces(data, eps=0.5, min_samples=5)
     labels_true = [d['labelId'] for d in data]
-    labels_pred = list(clt.labels_)
-    for (i, label) in enumerate(labels_pred):
-        if label == -1:
-            # -1表明没有所属的cluster，单独给一个标签
-            labels_pred[i] = len(labels_pred) + i
     # print(labels_true)
     # print(labels_pred)
     evaluate()
