@@ -82,6 +82,10 @@ def cluster_faces_by_DBSCAN(data, eps=0.5, min_samples=5):
     encodings = [d["encoding"] for d in data]
     clt = cluster.DBSCAN(metric="euclidean", eps=eps, min_samples=min_samples, n_jobs=-1)
     clt.fit(encodings)
+
+    # labelIDs = np.unique(clt.labels_)
+    # numUniqueFaces = len(np.where(labelIDs > -1)[0])
+
     labels = list(clt.labels_)
     for (i, label) in enumerate(labels):
         if label == -1:
@@ -94,6 +98,28 @@ def cluster_faces_by_CW(data, threshold=0.5):
     encodings = [dlib.vector(d["encoding"]) for d in data]
     labels = dlib.chinese_whispers_clustering(encodings, threshold)
     return labels
+
+
+def cluster_faces_by_OPTICS(data):
+    encodings = [d["encoding"] for d in data]
+    clt = cluster.OPTICS(cluster_method="xi", max_eps=2, min_samples=5, metric="euclidean", n_jobs=-1)
+    clt.fit(encodings)
+
+    # print(clt.core_distances_)
+    labels = list(clt.labels_)
+    for (i, label) in enumerate(labels):
+        if label == -1:
+            # -1是噪声点，表明没有所属的cluster，单独给一个标签
+            labels[i] = len(labels) + i
+    return labels
+
+
+def cluster_faces_by_Agglomerative(data, threshold=1):
+    encodings = [d["encoding"] for d in data]
+    clt = cluster.AgglomerativeClustering(distance_threshold=threshold, n_clusters=None)
+    clt.fit(encodings)
+    # print(clt.labels_)
+    return clt.labels_
 
 
 # %%
@@ -140,6 +166,12 @@ def evaluate():
     (homo_score, comp_score,
      v_score) = metrics.homogeneity_completeness_v_measure(labels_true,
                                                            labels_pred)
+
+    # no true labels
+    # encodings = [d["encoding"] for d in data]
+    # silhouette_score = metrics.silhouette_score(encodings, labels_pred, metric='euclidean')
+    # davies_bouldin_score = metrics.davies_bouldin_score(encodings, labels_pred)
+
     # p("fm_score", fm_score)
     # p("ar_score", ar_score)
     # p("ami_score", ami_score)
@@ -156,12 +188,13 @@ def evaluate():
 # %%
 # 聚类并且评价
 random.shuffle(data)
-for paramx in np.arange(0.8, 0.99, 0.01):
-    labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=5)
+
+for paramx in np.arange(0, 5, 0.1):
+    #     labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=5)
     # labels_pred = cluster_faces_by_CW(data, threshold=paramx)
-    # for paramx in range(1, 20):
-    #     clt = cluster_faces(data, eps=0.5, min_samples=paramx)
-    # clt = cluster_faces(data, eps=0.5, min_samples=5)
+    labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
+    # for paramx in range(1, 50):
+    #     labels_pred = cluster_faces_by_DBSCAN(data, eps=0.5, min_samples=paramx)
     labels_true = [d['labelId'] for d in data]
     # print(labels_true)
     # print(labels_pred)
