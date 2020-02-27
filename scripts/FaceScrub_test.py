@@ -114,7 +114,7 @@ def cluster_faces_by_OPTICS(data):
     return labels
 
 
-def cluster_faces_by_Agglomerative(data, threshold=1):
+def cluster_faces_by_Agglomerative(data, threshold=1.0):
     encodings = [d["encoding"] for d in data]
     clt = cluster.AgglomerativeClustering(distance_threshold=threshold, n_clusters=None)
     clt.fit(encodings)
@@ -127,7 +127,7 @@ def cluster_faces_by_Agglomerative(data, threshold=1):
 
 # testName = "FaceScrub-faces-10M-860-01"
 # testName = "FaceScrub-faces-10F-678-01"
-testName = "FaceScrub-faces-5M5F-892-01"
+# testName = "FaceScrub-faces-5M5F-892-01"
 
 # testName = "FaceScrub-faces-20M-1852-01"
 # testName = "FaceScrub-faces-20F-1622-01"
@@ -139,6 +139,8 @@ testName = "FaceScrub-faces-5M5F-892-01"
 
 # testName = "JAFFE-faces-hog"
 # testName = "JAFFE-faces-cnn"
+
+testName = "THWP-faces-hog"
 
 faceFolder = f"C:\\datasets\\face-tests\\{testName}"
 encodingsFile = f"C:\\datasets\\face-tests\\{testName}.encodings.pickle"
@@ -186,11 +188,11 @@ def evaluate():
 
 
 # %%
-# 聚类并且评价
+# 多个聚类参数测试
 random.shuffle(data)
 
-for paramx in np.arange(0, 5, 0.1):
-    #     labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=5)
+for paramx in np.arange(0.2, 0.4, 0.01):
+    # labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=1)
     # labels_pred = cluster_faces_by_CW(data, threshold=paramx)
     labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
     # for paramx in range(1, 50):
@@ -201,3 +203,10 @@ for paramx in np.arange(0, 5, 0.1):
     evaluate()
 
 # %%
+# 聚类并且评价
+random.shuffle(data)
+labels_pred = cluster_faces_by_Agglomerative(data, threshold=1.5)
+print(labels_pred)
+labels_true = [d['labelId'] for d in data]
+ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
+print(f"{round(ar_score, 4)}")
