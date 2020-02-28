@@ -3,10 +3,33 @@ import os
 import pickle
 import random
 import numpy as np
+import dlib
 from sklearn import cluster, metrics
 
 
 # %%
+def cluster_faces_by_DBSCAN(data, eps=0.5, min_samples=5):
+    encodings = [d["encoding"] for d in data]
+    clt = cluster.DBSCAN(metric="euclidean", eps=eps, min_samples=min_samples, n_jobs=-1)
+    clt.fit(encodings)
+
+    # labelIDs = np.unique(clt.labels_)
+    # numUniqueFaces = len(np.where(labelIDs > -1)[0])
+
+    labels = list(clt.labels_)
+    for (i, label) in enumerate(labels):
+        if label == -1:
+            # -1是噪声点，表明没有所属的cluster，单独给一个标签
+            labels[i] = len(labels) + i
+    return labels
+
+
+def cluster_faces_by_CW(data, threshold=0.5):
+    encodings = [dlib.vector(d["encoding"]) for d in data]
+    labels = dlib.chinese_whispers_clustering(encodings, threshold)
+    return labels
+
+
 def cluster_faces_by_Agglomerative(data, threshold=1.0):
     encodings = [d["encoding"] for d in data]
     clt = cluster.AgglomerativeClustering(distance_threshold=threshold, n_clusters=None)
@@ -25,12 +48,12 @@ data = pickle.load(open(encodingsFile, "rb"))
 
 # %%
 random.shuffle(data)
-
-labels_pred = cluster_faces_by_Agglomerative(data, threshold=1.5)
-print(labels_pred)
 labels_true = [d['labelId'] for d in data]
-ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
-print(f"{round(ar_score, 4)}")
+
+# labels_pred = cluster_faces_by_Agglomerative(data, threshold=1.5)
+# print(labels_pred)
+# ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
+# print(f"{round(ar_score, 4)}")
 
 # 建立图片中的人脸列表 {imgID: [faceIndex,...]}
 imgFaceDict = {}
@@ -50,6 +73,7 @@ restrictFacesList = []
 for imgID, faces in imgFaceDict.items():
     if len(faces) > 1:
         restrictFacesList.append(faces)
+
 
 # 计算限制条件被违反的照片个数（比例）
 # violateCount = 0
@@ -85,8 +109,12 @@ def checkViolate(restrictFacesList, labels_pred):
     # print(f'违反限制{violateCount}/{len(restrictFacesList)} = {violateRate}')
     return violateRate
 
-for paramx in np.arange(0, 3, 0.1):
-    labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
+
+for paramx in np.arange(0.2, 0.5, 0.01):
+    # labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
+    # labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=1)
+    labels_pred = cluster_faces_by_CW(data, threshold=paramx)
+
     ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
     violateRate = checkViolate(restrictFacesList, labels_pred)
     print(f"{round(paramx, 4)}\t{violateRate}\t{round(ar_score, 4)}")
