@@ -9,17 +9,19 @@ import settings
 from logger import get_logger
 
 def reload_faces():
+  logger = get_logger()
   conn = db.get_connection()
   try:
     with conn.cursor() as cursor:
       cursor.execute("select id, path from tbl_photo where face_detect_done=false")
       rows = cursor.fetchall()
-      for row in rows:
+      for (i, row) in enumerate(rows):
         photoId = row[0]
         photoPath = row[1]
         # 人脸检测、编码
         encode_face(photoId, photoPath, cursor)
         conn.commit()
+        logger.info(f"encoding face {i}/{len(rows)}")
       
       # 人脸分类、聚类
       cluster_face(cursor)
@@ -63,11 +65,17 @@ def cluster_face(cursor):
   # 只取未知人脸
   cursor.execute("select id, encoding from tbl_face where person_id is NULL")
   rows = cursor.fetchall()
+  if len(rows) < 1:
+    return
+
   faces = [{"id": row[0], "encoding": row[1]} for row in rows]
   encodings = [face["encoding"] for face in faces]
   
   # the eps value needs to be chosen carefully
-  clt = DBSCAN(metric="euclidean", eps=0.4, min_samples=5, n_jobs=-1)
+  bestGuessEps = select_cluster_param(cursor)
+  logger = get_logger()
+  logger.info(f"DBSCAN param eps value: {bestGuessEps}")
+  clt = DBSCAN(metric="euclidean", eps=bestGuessEps, min_samples=5, n_jobs=-1)
   clt.fit(encodings)
 
   labelIDs = np.unique(clt.labels_)
@@ -87,3 +95,83 @@ def cluster_face(cursor):
       face = faces[i]
       sql = "update tbl_face set person_id=%(personId)s where id=%(id)s;"
       cursor.execute(sql, {"personId": personId, "id": face["id"]})
+
+
+def select_cluster_param(cursor):
+  "自动选择聚类参数，DBSCAN的eps值"
+
+  MAX_VIOLATE_RATE = 0.15 # 允许15%的照片限制被违反
+  DEFAULT_PARAM = 0.4 # 默认值
+
+  # 先获取哪些人脸不应该出现在一个cluster里
+  restrictFacesList = get_restrict_faces_list(cursor)
+  if len(restrictFacesList) == 0:
+    return DEFAULT_PARAM
+
+  # 参数估算是基于所有照片的
+  cursor.execute("select id, encoding from tbl_face")
+  rows = cursor.fetchall()
+  faces = [{"id": row[0], "encoding": row[1]} for row in rows]
+  encodings = [face["encoding"] for face in faces]
+
+  # 用于将faceID转成index
+  faceDict = {} # {faceID: faceIndex}
+  for (i, face) in enumerate(faces):
+    faceID = face["id"]
+    faceDict[faceID] = i
+
+  for paramx in np.arange(0.2, 0.6, 0.01):
+    clt = DBSCAN(metric="euclidean", eps=paramx, min_samples=1, n_jobs=-1)
+    clt.fit(encodings)
+    labels_pred = clt.labels_
+    violateRate = check_violate(restrictFacesList, faceDict, labels_pred)
+    logger = get_logger()
+    logger.info(f"paramx: {round(paramx, 4)}, violateRate: {violateRate}")
+    if violateRate >= MAX_VIOLATE_RATE:
+      return round(paramx, 4)
+
+  return 0.6
+
+def get_restrict_faces_list(cursor):
+  "含有2个或以上人脸的照片作为限制条件 [[faceID1,faceID2], [faceID3,faceID4], ...]"
+  
+  # 选择有2张及以上人脸的照片
+  cursor.execute(
+    "SELECT photo.id"
+    " FROM tbl_photo photo"
+    " inner join tbl_face face on photo.id = face.photo_id"
+    " group by photo.id"
+    " having count(photo.id) > 1"
+  )
+  rows = cursor.fetchall()
+  photoIDs = [row[0] for row in rows]
+
+  # 将照片中的人脸放在数组里
+  restrictFacesList = []
+  for photoID in photoIDs:
+    cursor.execute("select id from tbl_face where photo_id = %s", (photoID, ))
+    rows = cursor.fetchall()
+    faceIDs = [row[0] for row in rows]
+    restrictFacesList.append(faceIDs)
+
+  return restrictFacesList
+
+
+def check_violate(restrictFacesList, faceDict, labels_pred):
+    "计算限制条件被违反的照片个数（比例）"
+    violateCount = 0
+    for restrictFaces in restrictFacesList:
+        # restrictFaces是一张照片中出现的人脸列表，它们不应该出现在同一个cluster里
+        personLabelSet = set()
+        for faceID in restrictFaces:
+            faceIndex = faceDict[faceID]
+            label = labels_pred[faceIndex]
+            personLabelSet.add(label)
+        if len(personLabelSet) < len(restrictFaces):
+            # 类簇个数少于人脸数，说明有的人脸被聚在了一个cluster里
+            violateCount += 1
+
+    violateRate = round(float(violateCount) / len(restrictFacesList), 4)
+    logger = get_logger()
+    logger.info(f'违反限制{violateCount}/{len(restrictFacesList)} = {violateRate}')
+    return violateRate
