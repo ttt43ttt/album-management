@@ -120,6 +120,7 @@ def select_cluster_param(cursor):
     faceID = face["id"]
     faceDict[faceID] = i
 
+  bestParamx = DEFAULT_PARAM
   for paramx in np.arange(0.2, 0.6, 0.01):
     clt = DBSCAN(metric="euclidean", eps=paramx, min_samples=1, n_jobs=-1)
     clt.fit(encodings)
@@ -127,8 +128,10 @@ def select_cluster_param(cursor):
     violateRate = check_violate(restrictFacesList, faceDict, labels_pred)
     logger = get_logger()
     logger.info(f"paramx: {round(paramx, 4)}, violateRate: {violateRate}")
-    if violateRate >= MAX_VIOLATE_RATE:
-      return round(paramx, 4)
+    if violateRate < MAX_VIOLATE_RATE:
+      bestParamx = paramx
+    else:
+      return bestParamx
 
   return 0.6
 
