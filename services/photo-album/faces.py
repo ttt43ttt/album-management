@@ -133,7 +133,7 @@ def select_cluster_param(cursor):
     else:
       return bestParamx
 
-  return 0.6
+  return bestParamx
 
 def get_restrict_faces_list(cursor):
   "含有2个或以上人脸的照片作为限制条件 [[faceID1,faceID2], [faceID3,faceID4], ...]"

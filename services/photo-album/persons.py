@@ -9,11 +9,12 @@ def list_persons():
   conn = db.get_connection()
   try:
     sql = (
-      "select person.id, person.name, count(photo.id)"
+      "select person.id, person.name, count(DISTINCT photo.id) photoCount"
       " from tbl_person person"
       " inner join tbl_face face on person.id = face.person_id"
       " inner join tbl_photo photo on face.photo_id = photo.id"
       " group by person.id"
+      " order by photoCount desc"
     )
     with conn.cursor() as cursor:
       cursor.execute(sql)
@@ -64,6 +65,7 @@ def list_person_photos(personId, limit=20, offset=0):
       " from tbl_photo photo"
       " inner join tbl_face face on photo.id = face.photo_id"
       " where face.person_id = %s"
+      " group by photo.id"
       " order by photo.taken_time desc"
       " LIMIT %s OFFSET %s"
     )
@@ -80,7 +82,7 @@ def count_person_photos(personId):
   conn = db.get_connection()
   try:
     sql = (
-      "select count(photo.id)"
+      "select count(DISTINCT photo.id)"
       " from tbl_photo photo"
       " inner join tbl_face face on photo.id = face.photo_id"
       " where face.person_id = %s"
