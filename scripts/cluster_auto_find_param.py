@@ -90,6 +90,28 @@ for imgID, faces in imgFaceDict.items():
 # violateRate = float(violateCount) / len(restrictFacesList)
 # print(f'违反限制{violateCount}/{len(restrictFacesList)} = {round(violateRate, 4)}')
 
+# %%
+def faces_distance_in_photo():
+    """查看同一张照片中人脸之间的距离分布情况"""
+    encodings = [d["encoding"] for d in data]
+
+    def min_distance(faces):
+        """人脸之间的最小距离"""
+        minDist = 10
+        for i in range(len(faces)):
+            f1 = encodings[faces[i]]
+            for j in range(i + 1, len(faces)):
+                f2 = encodings[faces[j]]
+                # 计算距离
+                dist = np.linalg.norm(f1 - f2)
+                if dist < minDist:
+                    minDist = dist
+        return minDist
+
+    for faces in restrictFacesList:
+        minDist = min_distance(faces)
+        print(minDist)
+
 
 # %%
 def checkViolate(restrictFacesList, labels_pred):
