@@ -8,6 +8,8 @@ import db
 import settings
 from logger import get_logger
 
+bestGuessEps = 0.3
+
 def reload_faces():
   logger = get_logger()
   conn = db.get_connection()
@@ -19,18 +21,28 @@ def reload_faces():
         photoId = row[0]
         photoPath = row[1]
         # 人脸检测、编码
-        encode_face(photoId, photoPath, cursor)
+        encode_faces(photoId, photoPath, cursor)
         conn.commit()
         logger.info(f"encoding face {i}/{len(rows)}")
       
-      # 人脸分类、聚类
-      cluster_face(cursor)
+      # 自动估算最佳eps值
+      global bestGuessEps
+      bestGuessEps = select_cluster_param(cursor)
+      logger = get_logger()
+      logger.info(f"DBSCAN param eps value: {bestGuessEps}")
+
+      # 人脸分类
+      classify_faces(cursor)
+      conn.commit()
+
+      # 人脸聚类
+      cluster_faces(cursor)
       conn.commit()
   finally:
     db.put_connection(conn)
  
 
-def encode_face(photoId, photoPath, cursor):
+def encode_faces(photoId, photoPath, cursor):
     # load the input image and convert it from RGB (OpenCV ordering)
     # to dlib ordering (RGB)
     image = cv2.imread(photoPath)
@@ -60,9 +72,48 @@ def encode_face(photoId, photoPath, cursor):
     cursor.execute("update tbl_photo set face_detect_done=true where id=%s", (photoId,))
 
 
-def cluster_face(cursor):
+def classify_faces(cursor):
+  # 选出所有已有标签的人脸
+  logger = get_logger()
+  logger.info("========== start classify_faces ==========")
+  cursor.execute("select id, encoding, person_id from tbl_face where person_id is not NULL")
+  rows = cursor.fetchall()
+  labeledFaces = [{"id": row[0], "encoding": row[1], "personId": row[2]} for row in rows]
+  if len(rows) < 1:
+    return
+  
+  knownEncodings = [face['encoding'] for face in labeledFaces]
+  knownLabels = [face['personId'] for face in labeledFaces]
+
+  # 分类一张人脸
+  def classify_one_face(face):
+    distances = face_recognition.face_distance(np.array(knownEncodings), np.array(face['encoding']))
+    minDist = 1000
+    index = -1
+    for (i,dist) in enumerate(distances):
+      if dist < minDist:
+        minDist = dist
+        index = i
+    # 最相近的人脸
+    if minDist < bestGuessEps:
+      labelPred = knownLabels[index]
+      faceId = face['id']
+      logger.info(f"faceID: {faceId}, minDist: {minDist}, predict label: {labelPred}")
+      cursor.execute("update tbl_face set person_id=%s where id=%s", (labelPred, faceId))
+
+  # 选出所有未知人脸
+  cursor.execute("select id, encoding from tbl_face where person_id is NULL")
+  rows = cursor.fetchall()
+  faces = [{"id": row[0], "encoding": row[1]} for row in rows]
+  for face in faces:
+    classify_one_face(face)
+  logger.info("END classify_faces")
+
+def cluster_faces(cursor):
   "人脸聚类"
   # 只取未知人脸
+  logger = get_logger()
+  logger.info("========== start cluster_faces ==========")
   cursor.execute("select id, encoding from tbl_face where person_id is NULL")
   rows = cursor.fetchall()
   if len(rows) < 1:
@@ -72,9 +123,6 @@ def cluster_face(cursor):
   encodings = [face["encoding"] for face in faces]
   
   # the eps value needs to be chosen carefully
-  bestGuessEps = select_cluster_param(cursor)
-  logger = get_logger()
-  logger.info(f"DBSCAN param eps value: {bestGuessEps}")
   clt = DBSCAN(metric="euclidean", eps=bestGuessEps, min_samples=5, n_jobs=-1)
   clt.fit(encodings)
 
@@ -88,6 +136,7 @@ def cluster_face(cursor):
     # 插入新的person
     cursor.execute("INSERT INTO tbl_person (name) VALUES (NULL) RETURNING id;")
     personId = cursor.fetchone()[0]
+    logger.info(f"Insert new person {personId}")
 
     # 当前person的人脸
     idxs = np.where(clt.labels_ == labelID)[0]
@@ -95,13 +144,14 @@ def cluster_face(cursor):
       face = faces[i]
       sql = "update tbl_face set person_id=%(personId)s where id=%(id)s;"
       cursor.execute(sql, {"personId": personId, "id": face["id"]})
-
+      logger.info(f"Label face {face['id']} with person {personId}")
+  logger.info("END cluster_faces")
 
 def select_cluster_param(cursor):
   "自动选择聚类参数，DBSCAN的eps值"
 
   MAX_VIOLATE_RATE = 0.15 # 允许15%的照片限制被违反
-  DEFAULT_PARAM = 0.4 # 默认值
+  DEFAULT_PARAM = 0.3 # 默认值
 
   # 先获取哪些人脸不应该出现在一个cluster里
   restrictFacesList = get_restrict_faces_list(cursor)
