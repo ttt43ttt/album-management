@@ -5,6 +5,7 @@ import json
 import logging
 
 from logger import create_logger
+from watch_folder import start_watch_files
 from photos import reload_photos, list_photos, get_photo_path, count_photos
 from faces import reload_faces
 from persons import list_persons, get_person_image, list_person_photos, count_person_photos,\
@@ -124,6 +125,9 @@ def linkPhotosToPerson():
     return {"data": "OK"}
 
 if __name__ == '__main__':
+    reload_photos()
+    start_watch_files()
+
     logger.info("service starts...")
     app.secret_key = 'super_secret_key'
     app.debug = True
