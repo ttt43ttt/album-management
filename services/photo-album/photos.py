@@ -142,11 +142,11 @@ def count_photos():
 def list_photos(limit = 20, offset = 0):
   conn = db.get_connection()
   try:
-    sql = f"SELECT id from tbl_photo order by taken_time desc LIMIT {limit} OFFSET {offset}"
+    sql = f"SELECT id, digest from tbl_photo order by taken_time desc LIMIT {limit} OFFSET {offset}"
     with conn.cursor() as cursor:
       cursor.execute(sql)
       rows = cursor.fetchall() 
-      return [{"id": row[0]} for row in rows]
+      return [{"id": row[0], "digest": row[1]} for row in rows]
   finally:
     db.put_connection(conn)
 

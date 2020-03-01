@@ -45,7 +45,8 @@ def listPhotos():
     photos = list_photos(pageSize, skipCount)
     for photo in photos:
         id = photo["id"]
-        photo["url"] = f"/api/photos/{id}/content"
+        digest = photo["digest"]
+        photo["url"] = f"/api/photos/{id}/content?d={digest}"
     return {"data": photos, "meta": meta}
 
 @app.route('/api/photos/<id>/content', methods=['GET'])
@@ -107,7 +108,8 @@ def listPersonPhotos(id):
     photos = list_person_photos(id, pageSize, skipCount)
     for photo in photos:
         id = photo["id"]
-        photo["url"] = f"/api/photos/{id}/content"
+        digest = photo["digest"]
+        photo["url"] = f"/api/photos/{id}/content?d={digest}"
     return {"data": photos, "meta": meta}
 
 @app.route('/api/persons/link-photos', methods=['POST'])

@@ -61,7 +61,7 @@ def list_person_photos(personId, limit=20, offset=0):
   conn = db.get_connection()
   try:
     sql = (
-      "select photo.id"
+      "select photo.id, photo.digest"
       " from tbl_photo photo"
       " inner join tbl_face face on photo.id = face.photo_id"
       " where face.person_id = %s"
@@ -72,7 +72,7 @@ def list_person_photos(personId, limit=20, offset=0):
     with conn.cursor() as cursor:
       cursor.execute(sql, (personId, limit, offset))
       rows = cursor.fetchall()
-      return [{"id": row[0]} for row in rows]
+      return [{"id": row[0], "digest": row[1]} for row in rows]
   finally:
     db.put_connection(conn)
 
