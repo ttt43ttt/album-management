@@ -7,7 +7,7 @@ def create_logger(logfilename):
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(logfilename, encoding="utf8")
     fh.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s\n%(message)s", "%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter("%(asctime)s\t%(message)s", "%Y-%m-%d %H:%M:%S")
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 

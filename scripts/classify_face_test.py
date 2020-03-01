@@ -28,6 +28,7 @@ X = [d["encoding"] for d in data]
 y = [d["labelId"] for d in data]
 
 # %%
+# KNN分类器
 for i in range(20):
     X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.3)
 
@@ -45,6 +46,7 @@ for i in range(20):
     print(f'{i + 1}\t{round(score1, 4)}\t{round(score2, 4)}')
 
 # %%
+# SVM分类器
 for i in range(10):
     X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.3)
     clf = svm.SVC(gamma='auto')

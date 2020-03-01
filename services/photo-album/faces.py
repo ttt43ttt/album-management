@@ -1,6 +1,7 @@
 import cv2
 import face_recognition
 from sklearn.cluster import DBSCAN
+from sklearn import neighbors
 from psycopg2.extras import Json
 import numpy as np
 
@@ -85,8 +86,9 @@ def classify_faces(cursor):
   knownEncodings = [face['encoding'] for face in labeledFaces]
   knownLabels = [face['personId'] for face in labeledFaces]
 
-  # 分类一张人脸
+  # 分类一张人脸（不用了，用方法classify_faces_by_NN代替）
   def classify_one_face(face):
+    # 普通的方式找最近的一个
     distances = face_recognition.face_distance(np.array(knownEncodings), np.array(face['encoding']))
     minDist = 1000
     index = -1
@@ -99,14 +101,31 @@ def classify_faces(cursor):
       labelPred = knownLabels[index]
       faceId = face['id']
       logger.info(f"faceID: {faceId}, minDist: {minDist}, predict label: {labelPred}")
-      cursor.execute("update tbl_face set person_id=%s where id=%s", (labelPred, faceId))
+      # cursor.execute("update tbl_face set person_id=%s where id=%s", (labelPred, faceId))
+
+  nn = neighbors.NearestNeighbors(n_neighbors=1, n_jobs=-1)
+  nn.fit(knownEncodings)
+  def classify_faces_by_NN(faces):
+    # NN方式找最近的一个
+    faceIDs = [face['id'] for face in faces]
+    encodings = [face['encoding'] for face in faces]
+    # distances和indexes里的每一个元素都是一个数组，数组里只有一个元素（因为n_neighbors=1）
+    (distances, indexes) = nn.kneighbors(encodings)
+    for (i, distance) in enumerate(distances):
+      if distance[0] < bestGuessEps:
+        index = indexes[i][0]
+        labelPred = knownLabels[index]
+        faceId = faceIDs[i]
+        logger.info(f"faceID: {faceId}, distance: {distance[0]}, predict label: {labelPred}")
+        cursor.execute("update tbl_face set person_id=%s where id=%s", (labelPred, faceId))
 
   # 选出所有未知人脸
   cursor.execute("select id, encoding from tbl_face where person_id is NULL")
   rows = cursor.fetchall()
   faces = [{"id": row[0], "encoding": row[1]} for row in rows]
-  for face in faces:
-    classify_one_face(face)
+  # for face in faces:
+  #   classify_one_face(face)
+  classify_faces_by_NN(faces)
   logger.info("END classify_faces")
 
 def cluster_faces(cursor):
