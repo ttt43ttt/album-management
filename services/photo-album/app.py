@@ -43,11 +43,13 @@ def listPhotos():
     meta = {"total": total, "limit": pageSize, "skip": skipCount}
     
     photos = list_photos(pageSize, skipCount)
+    data = []
     for photo in photos:
         id = photo["id"]
         digest = photo["digest"]
-        photo["url"] = f"/api/photos/{id}/content?d={digest}"
-    return {"data": photos, "meta": meta}
+        url = f"/api/photos/{id}/content?d={digest}"
+        data.append({"id": id, "url": url})
+    return {"data": data, "meta": meta}
 
 @app.route('/api/photos/<id>/content', methods=['GET'])
 def showPhotoContent(id):
@@ -106,11 +108,13 @@ def listPersonPhotos(id):
     meta = {"total": total, "limit": pageSize, "skip": skipCount}
     
     photos = list_person_photos(id, pageSize, skipCount)
+    data = []
     for photo in photos:
         id = photo["id"]
         digest = photo["digest"]
-        photo["url"] = f"/api/photos/{id}/content?d={digest}"
-    return {"data": photos, "meta": meta}
+        url = f"/api/photos/{id}/content?d={digest}"
+        data.append({"id": id, "url": url})
+    return {"data": data, "meta": meta}
 
 @app.route('/api/persons/link-photos', methods=['POST'])
 def linkPhotosToPerson():

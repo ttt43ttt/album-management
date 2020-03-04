@@ -29,10 +29,11 @@ def get_person_image(personId):
   conn = db.get_connection()
   try:
     sql = (
-      "select face.id faceId, photo.path, face.location"
+      "select face.id, photo.path, face.location"
       " from tbl_face face"
       " inner join tbl_photo photo on face.photo_id = photo.id"
       " where face.person_id = %s"
+      " order by photo.taken_time desc"
       " limit 1"
     )
     with conn.cursor() as cursor:
