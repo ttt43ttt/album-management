@@ -49,6 +49,9 @@
             <column name="photo_id" type="bigint">
                 <constraints nullable="false" foreignKeyName="fk_face_photo" references="tbl_photo(id)"/>
             </column>
+            <column name="rotation" type="int" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="location" type="json"/>
             <column name="encoding" type="json"/>
             <column name="person_id" type="bigint">

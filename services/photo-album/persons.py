@@ -4,6 +4,7 @@ import cv2
 import db
 import settings
 from logger import get_logger
+from utils import rotate_image
 
 def list_persons():
   conn = db.get_connection()
@@ -30,7 +31,7 @@ def get_person_image(personId):
   conn = db.get_connection()
   try:
     sql = (
-      "select face.id, photo.path, face.location"
+      "select face.id, photo.path, face.rotation, face.location"
       " from tbl_face face"
       " inner join tbl_photo photo on face.photo_id = photo.id"
       " where face.person_id = %s"
@@ -44,9 +45,14 @@ def get_person_image(personId):
         return None
       faceId = row[0]
       photoPath = row[1]
-      faceBox = row[2]
+      rotation = row[2]
+      faceBox = row[3]
       # 截取人脸
       image = cv2.imread(photoPath)
+      logger = get_logger()
+      logger.info(f"photoPath is {photoPath}")
+      logger.info(f"rotation is {rotation} type {type(rotation)}")
+      image = rotate_image(image, rotation)
       (top, right, bottom, left) = faceBox
       faceImage = image[top:bottom, left:right]
       # 保存到磁盘

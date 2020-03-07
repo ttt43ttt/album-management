@@ -9,6 +9,7 @@ import time
 import db
 import settings
 from logger import get_logger
+from utils import rotate_image
 
 bestGuessEps = 0.3
 
@@ -70,17 +71,25 @@ def encode_faces(photoId, photoPath, cursor):
     # load the input image and convert it from RGB (OpenCV ordering)
     # to dlib ordering (RGB)
     image = cv2.imread(photoPath)
-    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # 检测人脸
     # detect the (x, y)-coordinates of the bounding boxes
     # corresponding to each face in the input image
     # model can be hog or cnn
     start = time.time()
-    boxes = face_recognition.face_locations(rgb, model="hog")
+    rotation = 0
+    boxes = []
+    rotateOptions = (0, 90, 180, 270)
+    for angle in rotateOptions:
+      rgb = rotate_image(rgb_image, angle)
+      boxes = face_recognition.face_locations(rgb, model="hog")
+      if len(boxes) > 0:
+        rotation = angle
+        break
     end = time.time()
     time_detect_faces += (end-start)
-          
+
     # 生成特征
     # compute the facial embedding for the face
     start = time.time()
@@ -92,11 +101,11 @@ def encode_faces(photoId, photoPath, cursor):
     cursor.execute("DELETE from tbl_face where photo_id=%s", (photoId,))
 
     sql = (
-      "INSERT INTO tbl_face (photo_id, location, encoding)"
-      " VALUES (%(photoId)s, %(box)s, %(encoding)s)"
+      "INSERT INTO tbl_face (photo_id, rotation, location, encoding)"
+      " VALUES (%(photoId)s, %(rotation)s, %(box)s, %(encoding)s)"
     )
     for i, (box, enc) in enumerate(zip(boxes, encodings)):
-      cursor.execute(sql, {"photoId": photoId, "box": Json(box), "encoding": Json(enc.tolist())})
+      cursor.execute(sql, {"photoId": photoId, "rotation": rotation, "box": Json(box), "encoding": Json(enc.tolist())})
     
     # 标记photo已经识别过人脸
     cursor.execute("update tbl_photo set face_detect_done=true where id=%s", (photoId,))

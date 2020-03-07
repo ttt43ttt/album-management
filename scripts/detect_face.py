@@ -18,6 +18,19 @@ from sklearn import cluster, metrics
 
 
 # %%
+def rotateImage(img, angle):
+    code = None
+    if angle == 90:
+        code = cv2.ROTATE_90_COUNTERCLOCKWISE
+    elif angle == 180:
+        code = cv2.ROTATE_180
+    elif angle == 270:
+        code = cv2.ROTATE_90_CLOCKWISE
+    rotated = cv2.rotate(img, code)
+    return rotated
+
+
+# %%
 def detect_faces():
     """检测人脸，并按人物文件夹存成文件"""
     persons = []
@@ -54,8 +67,8 @@ def detect_faces():
 
 
 # %%
-srcFolder = r"C:\datasets\CASIA-FaceV5(000-099)"
-destFolder = r"C:\datasets\face-tests\CASIA-FaceV5(000-099)-faces-hog"
+srcFolder = r"C:\datasets\face-tests\rotate-test"
+destFolder = r"C:\temp\rotate-test"
 detect_model = "hog"  # hog or cnn
 
 detect_faces()

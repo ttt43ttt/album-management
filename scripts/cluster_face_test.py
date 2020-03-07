@@ -140,7 +140,8 @@ def cluster_faces_by_Agglomerative(data, threshold=1.0):
 # testName = "JAFFE-faces-hog"
 # testName = "JAFFE-faces-cnn"
 
-testName = "THWP-faces-hog"
+# testName = "THWP-faces-hog"
+testName = "rotate-test"
 
 faceFolder = f"C:\\datasets\\face-tests\\{testName}"
 encodingsFile = f"C:\\datasets\\face-tests\\{testName}.encodings.pickle"
@@ -191,10 +192,10 @@ def evaluate():
 # 多个聚类参数测试
 random.shuffle(data)
 
-for paramx in np.arange(0.2, 0.4, 0.01):
-    # labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=1)
+for paramx in np.arange(0.2, 0.7, 0.01):
+    labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=1)
     # labels_pred = cluster_faces_by_CW(data, threshold=paramx)
-    labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
+    # labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
     # for paramx in range(1, 50):
     #     labels_pred = cluster_faces_by_DBSCAN(data, eps=0.5, min_samples=paramx)
     labels_true = [d['labelId'] for d in data]
