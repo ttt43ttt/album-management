@@ -41,6 +41,7 @@ class LinkPhotosModal extends React.Component {
             .then(onHide);
         }}
         okButtonProps={{ disabled: !(selectedKey || newPersonName), loading: isSaving }}
+        width="800px"
       >
         <Spin spinning={isLoading}>
           <span>选择已有的人物集合</span>
