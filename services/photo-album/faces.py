@@ -4,6 +4,7 @@ from sklearn.cluster import DBSCAN
 from sklearn import neighbors
 from psycopg2.extras import Json
 import numpy as np
+import time
 
 import db
 import settings
@@ -11,13 +12,21 @@ from logger import get_logger
 
 bestGuessEps = 0.3
 
+time_detect_faces = 0
+time_encode_faces = 0
+
 def reload_faces():
   logger = get_logger()
+  logger.info("=========== start reload_faces() ===========")
   conn = db.get_connection()
   try:
     with conn.cursor() as cursor:
       cursor.execute("select id, path from tbl_photo where face_detect_done=false")
       rows = cursor.fetchall()
+      logger.info("start to detect&encode faces")
+      global time_detect_faces, time_encode_faces
+      time_detect_faces = 0
+      time_encode_faces = 0
       for (i, row) in enumerate(rows):
         photoId = row[0]
         photoPath = row[1]
@@ -25,25 +34,39 @@ def reload_faces():
         encode_faces(photoId, photoPath, cursor)
         conn.commit()
         logger.info(f"encoding face {i}/{len(rows)}")
+      logger.info(f"time_detect_faces: {time_detect_faces} seconds")
+      logger.info(f"time_encode_faces: {time_encode_faces} seconds")
+      logger.info("end detect&encode faces")
       
       # 自动估算最佳eps值
+      logger.info("start to calculate BestEps")
+      start = time.time()
       global bestGuessEps
       bestGuessEps = select_cluster_param(cursor)
-      logger = get_logger()
+      end = time.time()
+      logger.info(f"calculate BestEps takes {end-start} seconds")
       logger.info(f"DBSCAN param eps value: {bestGuessEps}")
 
       # 人脸分类
+      start = time.time()
       classify_faces(cursor)
+      end = time.time()
+      logger.info(f"classify_faces takes {end-start} seconds")
       conn.commit()
 
       # 人脸聚类
+      start = time.time()
       cluster_faces(cursor)
+      end = time.time()
+      logger.info(f"cluster_faces takes {end-start} seconds")
       conn.commit()
   finally:
     db.put_connection(conn)
+    logger.info("end reload_faces()")
  
 
 def encode_faces(photoId, photoPath, cursor):
+    global time_detect_faces, time_encode_faces
     # load the input image and convert it from RGB (OpenCV ordering)
     # to dlib ordering (RGB)
     image = cv2.imread(photoPath)
@@ -53,11 +76,17 @@ def encode_faces(photoId, photoPath, cursor):
     # detect the (x, y)-coordinates of the bounding boxes
     # corresponding to each face in the input image
     # model can be hog or cnn
+    start = time.time()
     boxes = face_recognition.face_locations(rgb, model="hog")
+    end = time.time()
+    time_detect_faces += (end-start)
           
     # 生成特征
     # compute the facial embedding for the face
+    start = time.time()
     encodings = face_recognition.face_encodings(rgb, known_face_locations=boxes, num_jitters=1)
+    end = time.time()
+    time_encode_faces += (end-start)
 
     # delete saved faces of this photo
     cursor.execute("DELETE from tbl_face where photo_id=%s", (photoId,))

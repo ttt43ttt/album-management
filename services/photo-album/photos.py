@@ -13,7 +13,10 @@ from logger import get_logger
 def reload_photos():
   logger = get_logger()
   logger.info("======= start reload_photos =======")
+  start = time.time()
   do_reload_photos()
+  end = time.time()
+  logger.info(f"reload_photos takes {end-start} seconds")
   logger.info("reload_photos DONE")
 
 

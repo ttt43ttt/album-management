@@ -131,10 +131,11 @@ def linkPhotosToPerson():
     return {"data": "OK"}
 
 if __name__ == '__main__':
+    logger.info("service starts...")
     reload_photos()
     start_watch_files()
 
-    logger.info("service starts...")
     app.secret_key = 'super_secret_key'
     app.debug = True
+    logger.info("listening on port 10080")
     app.run(host='0.0.0.0', port=10080)
