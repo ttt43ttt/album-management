@@ -13,6 +13,7 @@ def list_persons():
       " from tbl_person person"
       " inner join tbl_face face on person.id = face.person_id"
       " inner join tbl_photo photo on face.photo_id = photo.id"
+      " where person.id != -1"
       " group by person.id"
       " order by photoCount desc"
     )
@@ -135,8 +136,9 @@ def remove_persons(ids):
   conn = db.get_connection()
   try:
     with conn.cursor() as cursor:
+      ensure_hidden_person(cursor)
       idsToRemove = tuple(ids)
-      cursor.execute("update tbl_face set person_id=NULL where person_id in %s", (idsToRemove,))
+      cursor.execute("update tbl_face set person_id=-1 where person_id in %s", (idsToRemove,))
       cursor.execute("delete from tbl_person where id in %s", (idsToRemove,))
     conn.commit()
   finally:
@@ -147,8 +149,15 @@ def link_photos_to_person(photoIds, personId, newPersonId):
   conn = db.get_connection()
   try:
     with conn.cursor() as cursor:
+      ensure_hidden_person(cursor)
       cursor.execute("update tbl_face set person_id=%s where person_id=%s and photo_id in %s",
       (newPersonId, personId, tuple(photoIds)))
     conn.commit()
   finally:
     db.put_connection(conn)
+
+def ensure_hidden_person(cursor):
+  cursor.execute("select id from tbl_person where id=-1")
+  row = cursor.fetchone()
+  if row is None:
+    cursor.execute("insert into tbl_person (id, name) values (-1, 'HIDDEN')")

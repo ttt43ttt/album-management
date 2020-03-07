@@ -127,6 +127,8 @@ def linkPhotosToPerson():
         return make_response("personId是必须的", 400)
     if newPersonName:
         newPersonId = create_person(newPersonName)
+    if newPersonId is None:
+        newPersonId = -1
     link_photos_to_person(photoIds, personId, newPersonId)
     return {"data": "OK"}
 
