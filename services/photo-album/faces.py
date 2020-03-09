@@ -83,7 +83,7 @@ def encode_faces(photoId, photoPath, cursor):
     rotateOptions = (0, 90, 180, 270)
     for angle in rotateOptions:
       rgb = rotate_image(rgb_image, angle)
-      boxes = face_recognition.face_locations(rgb, model="hog")
+      boxes = face_recognition.face_locations(rgb, model="hog", number_of_times_to_upsample=0)
       if len(boxes) > 0:
         rotation = angle
         break

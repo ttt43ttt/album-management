@@ -8,6 +8,7 @@ Created on Fri Feb 21 13:02:29 2020
 # %%
 import random
 import os
+import time
 import shutil
 import pickle
 import cv2
@@ -31,6 +32,22 @@ def rotateImage(img, angle):
 
 
 # %%
+def detect_face_by_haar(img) -> list:
+    HAAR_CASCADE_FILE = r"C:\apps\Anaconda3\envs\py36_x86\Lib\site-packages\cv2\data\haarcascade_frontalface_default.xml"
+    cascade = cv2.CascadeClassifier(HAAR_CASCADE_FILE)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    try:
+        faces = cascade.detectMultiScale(img)
+    except Exception as e:
+        print(e)
+        return []
+    boxes = []
+    for (x, y, w, h) in faces:
+        # 转成上右下左
+        boxes.append([y, x + w, y + h, x])
+    return boxes
+
+
 def detect_faces():
     """检测人脸，并按人物文件夹存成文件"""
     persons = []
@@ -52,14 +69,16 @@ def detect_faces():
         print(imagePath)
 
         image = cv2.imread(imagePath)
+        # boxes = detect_face_by_haar(image)
         rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        boxes = face_recognition.face_locations(rgb, model=detect_model)
+        boxes = face_recognition.face_locations(rgb, model=detect_model, number_of_times_to_upsample=0)
         print(f"detected {len(boxes)} faces")
 
         for (fi, box) in enumerate(boxes):
             (top, right, bottom, left) = box
             faceImg = image[top:bottom, left:right]
-            folder = os.path.join(destFolder, pName)
+            # folder = os.path.join(destFolder, pName)
+            folder = destFolder
             os.makedirs(folder, exist_ok=True)
             facePath = os.path.join(folder, f"{imageName}_{fi}.jpg")
             print(f"[INFO] writing to {facePath}")
@@ -67,8 +86,11 @@ def detect_faces():
 
 
 # %%
-srcFolder = r"C:\datasets\face-tests\rotate-test"
-destFolder = r"C:\temp\rotate-test"
+srcFolder = r"C:\temp\images"
+destFolder = r"C:\datasets\THWP-origin-faces-hog_up0"
 detect_model = "hog"  # hog or cnn
 
+start = time.time()
 detect_faces()
+end = time.time()
+print(f"detect_faces() takes {end - start} seconds")
