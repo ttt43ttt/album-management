@@ -16,6 +16,7 @@ import face_recognition
 import numpy as np
 from imutils import paths
 from sklearn import cluster, metrics
+from metrics_f1_score import f1_score
 
 
 # %%
@@ -135,13 +136,13 @@ def cluster_faces_by_Agglomerative(data, threshold=1.0):
 
 # testName = "FaceScrub-faces-mix-10-01"
 
-# testName = "CASIA-FaceV5(000-099)-faces-hog"
+testName = "CASIA-FaceV5(000-099)-faces-hog"
 
 # testName = "JAFFE-faces-hog"
 # testName = "JAFFE-faces-cnn"
 
 # testName = "THWP-faces-hog"
-testName = "rotate-test"
+# testName = "rotate-test"
 
 faceFolder = f"C:\\datasets\\face-tests\\{testName}"
 encodingsFile = f"C:\\datasets\\face-tests\\{testName}.encodings.pickle"
@@ -163,12 +164,13 @@ def evaluate():
     def p(name, score):
         print(f"{name}: {round(score, 4)}")
 
-    fm_score = metrics.fowlkes_mallows_score(labels_true, labels_pred)
     ar_score = metrics.adjusted_rand_score(labels_true, labels_pred)
+    # fm_score = metrics.fowlkes_mallows_score(labels_true, labels_pred)
+    # f1Score = f1_score(labels_true, labels_pred)
     # ami_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
-    (homo_score, comp_score,
-     v_score) = metrics.homogeneity_completeness_v_measure(labels_true,
-                                                           labels_pred)
+    # (homo_score, comp_score,
+    #  v_score) = metrics.homogeneity_completeness_v_measure(labels_true,
+    #                                                        labels_pred)
 
     # no true labels
     # encodings = [d["encoding"] for d in data]
@@ -184,7 +186,7 @@ def evaluate():
 
     # homogeneity: each cluster contains only members of a single class.
     # completeness: all members of a given class are assigned to the same cluster.
-    # print(f"{round(paramx, 4)}\t{round(fm_score, 4)}\t{round(ar_score, 4)}\t{round(homo_score, 4)}\t{round(comp_score, 4)}\t{round(v_score, 4)}")
+    # print(f"{round(paramx, 4)}\t{round(ar_score, 4)}\t{round(fm_score, 4)}\t{round(f1Score, 4)}\t{round(homo_score, 4)}\t{round(comp_score, 4)}\t{round(v_score, 4)}")
     print(f"{round(paramx, 4)}\t{round(ar_score, 4)}")
 
 
@@ -192,8 +194,8 @@ def evaluate():
 # 多个聚类参数测试
 random.shuffle(data)
 
-for paramx in np.arange(0.2, 0.7, 0.01):
-    labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=1)
+for paramx in np.arange(0.2, 0.4, 0.005):
+    labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=4)
     # labels_pred = cluster_faces_by_CW(data, threshold=paramx)
     # labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
     # for paramx in range(1, 50):
