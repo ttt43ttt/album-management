@@ -16,6 +16,7 @@ import face_recognition
 import numpy as np
 from imutils import paths
 from sklearn import cluster, metrics
+from centerface import CenterFace
 
 
 # %%
@@ -48,6 +49,18 @@ def detect_face_by_haar(img) -> list:
     return boxes
 
 
+def detect_face_by_centerface(img) -> list:
+    h, w = img.shape[:2]
+    cf = CenterFace(landmarks=True)
+    faces, landmarks = cf(img, h, w, threshold=0.5)
+    boxes = []
+    for face in faces:
+        (x1, y1, x2, y2), score = face[:4], face[4]
+        box = [int(y1), int(x2), int(y2), int(x1)]
+        boxes.append(box)
+    return boxes
+
+
 def detect_faces():
     """检测人脸，并按人物文件夹存成文件"""
     persons = []
@@ -70,6 +83,7 @@ def detect_faces():
 
         image = cv2.imread(imagePath)
         # boxes = detect_face_by_haar(image)
+        # boxes = detect_face_by_centerface(image)
         rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         boxes = face_recognition.face_locations(rgb, model=detect_model, number_of_times_to_upsample=0)
         print(f"detected {len(boxes)} faces")
@@ -87,7 +101,7 @@ def detect_faces():
 
 # %%
 srcFolder = r"C:\temp\images"
-destFolder = r"C:\datasets\THWP-origin-faces-hog_up0"
+destFolder = r"C:\temp\faces-hog"
 detect_model = "hog"  # hog or cnn
 
 start = time.time()
