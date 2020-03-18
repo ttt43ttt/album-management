@@ -1,4 +1,5 @@
 import os
+import cv2
 from imutils import paths
 from PIL import Image # pip install Pillow
 import hashlib
@@ -155,15 +156,33 @@ def list_photos(limit = 20, offset = 0):
 
 
 def get_photo_path(id):
+  """获取照片preview的文件路径"""
   conn = db.get_connection()
   try:
-    sql = "SELECT path from tbl_photo where id=%(id)s"
+    sql = "SELECT path,digest from tbl_photo where id=%(id)s"
     with conn.cursor() as cursor:
       cursor.execute(sql, {"id": id})
       row = cursor.fetchone()
       if row is None:
         return None
       else:
-        return row[0]
+        path = row[0]
+        digest = row[1]
+        img = cv2.imread(path)
+        previewImg = preview_image(img, 800)
+        previewPath = os.path.join(settings.SMALL_PHOTO_HOME, f"{digest}.jpg")
+        os.makedirs(settings.SMALL_PHOTO_HOME, exist_ok=True)
+        cv2.imwrite(previewPath, previewImg)
+        return previewPath
   finally:
     db.put_connection(conn)
+
+
+def preview_image(img, max_size):
+    h, w = img.shape[:2]
+    ratio = min(max_size / h, max_size / w)
+    if ratio < 1:
+        # 缩小
+        new_size = (int(w * ratio), int(h * ratio))
+        img = cv2.resize(img, new_size, interpolation=cv2.INTER_AREA)    
+    return img

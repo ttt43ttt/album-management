@@ -1,4 +1,5 @@
 import cv2
+import dlib
 import face_recognition
 from sklearn.cluster import DBSCAN
 from sklearn import neighbors
@@ -78,12 +79,23 @@ def encode_faces(photoId, photoPath, cursor):
     # corresponding to each face in the input image
     # model can be hog or cnn
     start = time.time()
+    MAX_SIZE = 1000 # 检测照片的最大尺寸
+    h, w = rgb_image.shape[:2]
+    ratio = min(MAX_SIZE / h, MAX_SIZE / w)
+    if ratio < 1:
+        # resize the image
+        new_size = (int(w * ratio), int(h * ratio))
+        resized_img = cv2.resize(rgb_image, new_size, interpolation=cv2.INTER_AREA)
+    else:
+      resized_img = rgb_image
+
     rotation = 0
     boxes = []
     rotateOptions = (0, 90, 180, 270)
     for angle in rotateOptions:
-      rgb = rotate_image(rgb_image, angle)
-      boxes = face_recognition.face_locations(rgb, model="hog", number_of_times_to_upsample=0)
+      img = rotate_image(resized_img, angle)
+      # 人脸检测
+      boxes = face_recognition.face_locations(img, model="hog", number_of_times_to_upsample=1)
       if len(boxes) > 0:
         rotation = angle
         break
@@ -93,7 +105,7 @@ def encode_faces(photoId, photoPath, cursor):
     # 生成特征
     # compute the facial embedding for the face
     start = time.time()
-    encodings = face_recognition.face_encodings(rgb, known_face_locations=boxes, num_jitters=1)
+    encodings = face_recognition.face_encodings(img, known_face_locations=boxes, num_jitters=1)
     end = time.time()
     time_encode_faces += (end-start)
 
@@ -105,7 +117,11 @@ def encode_faces(photoId, photoPath, cursor):
       " VALUES (%(photoId)s, %(rotation)s, %(box)s, %(encoding)s)"
     )
     for i, (box, enc) in enumerate(zip(boxes, encodings)):
-      cursor.execute(sql, {"photoId": photoId, "rotation": rotation, "box": Json(box), "encoding": Json(enc.tolist())})
+      if ratio < 1:
+        origin_box = tuple([int(value / ratio) for value in box])
+      else:
+        origin_box = box
+      cursor.execute(sql, {"photoId": photoId, "rotation": rotation, "box": Json(origin_box), "encoding": Json(enc.tolist())})
     
     # 标记photo已经识别过人脸
     cursor.execute("update tbl_photo set face_detect_done=true where id=%s", (photoId,))

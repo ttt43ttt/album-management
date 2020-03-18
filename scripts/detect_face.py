@@ -32,6 +32,21 @@ def rotateImage(img, angle):
     return rotated
 
 
+def image_resize(image, max_width, max_height, inter=cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    (h, w) = image.shape[:2]
+
+    # calculate the resize ratio and keep aspect
+    r = min(max_height / float(h), max_width / float(w))
+    dim = (int(w * r), int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation=inter)
+    # return the resized image
+    return resized
+
+
 # %%
 def detect_face_by_haar(img) -> list:
     HAAR_CASCADE_FILE = r"C:\apps\Anaconda3\envs\py36_x86\Lib\site-packages\cv2\data\haarcascade_frontalface_default.xml"
@@ -61,6 +76,29 @@ def detect_face_by_centerface(img) -> list:
     return boxes
 
 
+def detect_face_by_HOG(img) -> list:
+    max_size = 800
+    h, w = img.shape[:2]
+    ratio = min(max_size / h, max_size / w)
+
+    if ratio < 1:
+        # resize the image
+        new_size = (int(w * ratio), int(h * ratio))
+        img = cv2.resize(img, new_size, interpolation=cv2.INTER_AREA)
+
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    boxes = face_recognition.face_locations(rgb, model=detect_model, number_of_times_to_upsample=1)
+
+    if ratio < 1:
+        new_boxes = []
+        for box in boxes:
+            new_box = tuple([int(value / ratio) for value in box])
+            new_boxes.append(new_box)
+        return new_boxes
+    else:
+        return boxes
+
+
 def detect_faces():
     """检测人脸，并按人物文件夹存成文件"""
     persons = []
@@ -84,8 +122,7 @@ def detect_faces():
         image = cv2.imread(imagePath)
         # boxes = detect_face_by_haar(image)
         # boxes = detect_face_by_centerface(image)
-        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        boxes = face_recognition.face_locations(rgb, model=detect_model, number_of_times_to_upsample=0)
+        boxes = detect_face_by_HOG(image)
         print(f"detected {len(boxes)} faces")
 
         for (fi, box) in enumerate(boxes):
