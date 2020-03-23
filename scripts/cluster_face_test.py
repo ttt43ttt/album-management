@@ -9,6 +9,7 @@ Created on Fri Feb 21 13:02:29 2020
 import random
 import os
 import shutil
+import time
 import pickle
 import cv2
 import dlib
@@ -128,7 +129,7 @@ def cluster_faces_by_Agglomerative(data, threshold=1.0):
 
 # testName = "FaceScrub-faces-10M-860-01"
 # testName = "FaceScrub-faces-10F-678-01"
-# testName = "FaceScrub-faces-5M5F-892-01"
+testName = "FaceScrub-faces-5M5F-892-01"
 
 # testName = "FaceScrub-faces-20M-1852-01"
 # testName = "FaceScrub-faces-20F-1622-01"
@@ -136,12 +137,13 @@ def cluster_faces_by_Agglomerative(data, threshold=1.0):
 
 # testName = "FaceScrub-faces-mix-10-01"
 
-testName = "CASIA-FaceV5(000-099)-faces-hog"
+# testName = "THWP-faces-hog"
 
 # testName = "JAFFE-faces-hog"
 # testName = "JAFFE-faces-cnn"
 
-# testName = "THWP-faces-hog"
+# testName = "CASIA-FaceV5(000-099)-faces-hog"
+
 # testName = "rotate-test"
 
 faceFolder = f"C:\\datasets\\face-tests\\{testName}"
@@ -191,15 +193,29 @@ def evaluate():
 
 
 # %%
-# 多个聚类参数测试
+# eps聚类参数测试
 random.shuffle(data)
 
-for paramx in np.arange(0.2, 0.4, 0.005):
-    labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=4)
+start = time.time()
+for paramx in np.arange(0.2, 0.8, 0.01):
+    labels_pred = cluster_faces_by_DBSCAN(data, eps=paramx, min_samples=5)
     # labels_pred = cluster_faces_by_CW(data, threshold=paramx)
     # labels_pred = cluster_faces_by_Agglomerative(data, threshold=paramx)
     # for paramx in range(1, 50):
     #     labels_pred = cluster_faces_by_DBSCAN(data, eps=0.5, min_samples=paramx)
+    labels_true = [d['labelId'] for d in data]
+    # print(labels_true)
+    # print(labels_pred)
+    evaluate()
+end = time.time()
+print(f"cluster_faces takes {end - start} seconds")
+
+# %%
+# minPts聚类参数测试
+random.shuffle(data)
+
+for paramx in range(1, 50):
+    labels_pred = cluster_faces_by_DBSCAN(data, eps=0.45, min_samples=paramx)
     labels_true = [d['labelId'] for d in data]
     # print(labels_true)
     # print(labels_pred)
