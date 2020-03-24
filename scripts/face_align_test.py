@@ -13,9 +13,6 @@ from imutils import paths
 from sklearn import cluster, metrics
 
 # %%
-
-face_detector = dlib.get_frontal_face_detector()
-
 predictor_68_point_model = face_recognition_models.pose_predictor_model_location()
 pose_predictor_68_point = dlib.shape_predictor(predictor_68_point_model)
 
@@ -25,8 +22,8 @@ pose_predictor_5_point = dlib.shape_predictor(predictor_5_point_model)
 
 # %%
 def align_face(face_image):
-    # pose_predictor = pose_predictor_5_point
-    pose_predictor = pose_predictor_68_point
+    pose_predictor = pose_predictor_5_point
+    # pose_predictor = pose_predictor_68_point
     (h, w) = face_image.shape[:2]
     face_location = dlib.rectangle(0, 0, w, h)
     landmark = pose_predictor(face_image, face_location)
@@ -39,7 +36,7 @@ def align_face(face_image):
 
 
 # %%
-faces_folder = r"C:\datasets\face-tests\FaceScrub-faces-10-100-01"
+faces_folder = r"C:\datasets\face-tests\FaceScrub-faces-10M10F-1677-01"
 output_folder = r"c:\temp\faces"
 
 
