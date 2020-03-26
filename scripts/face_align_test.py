@@ -26,18 +26,24 @@ def align_face(face_image):
     # pose_predictor = pose_predictor_68_point
     (h, w) = face_image.shape[:2]
     face_location = dlib.rectangle(0, 0, w, h)
+    start = time.time()
     landmark = pose_predictor(face_image, face_location)
+    end = time.time()
+    global used_time
+    used_time += (end - start)
     points = [(p.x, p.y) for p in landmark.parts()]
     # print(points)
     img = face_image
     for p in points:
-        img = cv2.circle(img, p, radius=2, color=(0, 0, 255), thickness=-1)
+        img = cv2.circle(img, p, radius=int(h / 70), color=(0, 0, 255), thickness=-1)
     return img
 
 
 # %%
+# faces_folder = r"C:\datasets\face-tests\FaceScrub-faces-10-100-01"
 faces_folder = r"C:\datasets\face-tests\FaceScrub-faces-10M10F-1677-01"
-output_folder = r"c:\temp\faces"
+output_folder = r"c:\temp\faces-align-5"
+used_time = 0
 
 
 def align_faces():
@@ -67,7 +73,5 @@ def align_faces():
         cv2.imwrite(target_path, new_img)
 
 
-start = time.time()
 align_faces()
-end = time.time()
-print(f"align_faces takes {end - start} seconds")
+print(f"align_faces takes {used_time} seconds")
