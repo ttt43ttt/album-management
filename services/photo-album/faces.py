@@ -79,7 +79,7 @@ def encode_faces(photoId, photoPath, cursor):
     # corresponding to each face in the input image
     # model can be hog or cnn
     start = time.time()
-    MAX_SIZE = 1000 # 检测照片的最大尺寸
+    MAX_SIZE = 800 # 检测照片的最大尺寸
     h, w = rgb_image.shape[:2]
     ratio = min(MAX_SIZE / h, MAX_SIZE / w)
     if ratio < 1:
