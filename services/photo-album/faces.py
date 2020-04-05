@@ -223,8 +223,10 @@ def cluster_faces(cursor):
 def select_cluster_param(cursor):
   "自动选择聚类参数，DBSCAN的eps值"
 
-  MAX_VIOLATE_RATE = 0.15 # 允许15%的照片限制被违反
+  MAX_VIOLATE_RATE = 0.05 # 允许5%的照片限制被违反
   DEFAULT_PARAM = 0.3 # 默认值
+  MIN_EPS = 0.2 # 最小值 0.2
+  MAX_EPS = 0.6 # 最大值 0.6
 
   # 先获取哪些人脸不应该出现在一个cluster里
   restrictFacesList = get_restrict_faces_list(cursor)
@@ -244,7 +246,7 @@ def select_cluster_param(cursor):
     faceDict[faceID] = i
 
   bestParamx = DEFAULT_PARAM
-  for paramx in np.arange(0.2, 0.6, 0.01):
+  for paramx in np.arange(MIN_EPS, MAX_EPS, 0.01):
     clt = DBSCAN(metric="euclidean", eps=paramx, min_samples=1, n_jobs=-1)
     clt.fit(encodings)
     labels_pred = clt.labels_

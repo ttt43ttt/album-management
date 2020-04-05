@@ -134,7 +134,7 @@ def linkPhotosToPerson():
 
 if __name__ == '__main__':
     logger.info("service starts...")
-    reload_photos()
+    # reload_photos()
     start_watch_files()
 
     app.secret_key = 'super_secret_key'
