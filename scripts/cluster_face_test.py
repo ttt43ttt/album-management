@@ -157,9 +157,11 @@ data = None
 if os.path.exists(encodingsFile):
     data = pickle.load(open(encodingsFile, "rb"))
 if data is None or re_encode_faces:
+    start = time.time()
     data = encode_faces(faceFolder)
+    end = time.time()
+    print(f"encode_faces takes {end - start} seconds")
     pickle.dump(data, open(encodingsFile, "wb"))
-
 
 # %%
 def evaluate():

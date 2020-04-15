@@ -145,3 +145,13 @@ start = time.time()
 detect_faces()
 end = time.time()
 print(f"detect_faces() takes {end - start} seconds")
+
+# %%
+# imagePath = r"C:\datasets\THWP-origin\IMG_0534.jpg"
+imagePath = r"C:\temp\images\IMG_0534.jpg"
+image = cv2.imread(imagePath)
+start = time.time()
+detect_model = "hog"
+boxes = detect_face_by_HOG(image)
+end = time.time()
+print(f"detect_face_by_HOG finds {len(boxes)} faces, takes {end - start} seconds")
