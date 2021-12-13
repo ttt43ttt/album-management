@@ -1,6 +1,9 @@
 # album-management
 Photo album management system based on face recognition
 
+<img src="https://user-images.githubusercontent.com/132509/145827516-731b7404-15d8-4023-ba9f-5a35420c6bad.png" style="width: 500px;"/>
+
+
 # Original Article
 https://www.pyimagesearch.com/2018/07/09/face-clustering-with-python/
 http://www.atyun.com/23521.html
