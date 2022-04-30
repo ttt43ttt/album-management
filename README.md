@@ -20,7 +20,7 @@ https://www.pyimagesearch.com/2018/07/09/face-clustering-with-python/
 http://www.atyun.com/23521.html
 
 
-## How to run the example (basic demo, not this project)
+### How to run demo in the original article (not this project)
 - From Anaconda command line: `conda activate py36_x86`
   - To setup Python and modules: python3.6 x86
     - `pip install imutils face_recognition scikit-learn`
